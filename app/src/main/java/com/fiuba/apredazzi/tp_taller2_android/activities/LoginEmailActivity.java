@@ -121,6 +121,7 @@ public class LoginEmailActivity extends AppCompatActivity {
                 Log.d(TAG, "facebook:onError", exception);
             }
         });
+
     }
 
     private void handleFacebookAccessToken(final AccessToken accessToken) {
