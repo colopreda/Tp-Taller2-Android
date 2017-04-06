@@ -8,13 +8,21 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.api.LoginService;
+import com.fiuba.apredazzi.tp_taller2_android.model.FBUser;
 import com.fiuba.apredazzi.tp_taller2_android.model.Token;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,6 +34,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static android.content.ContentValues.TAG;
+
 public class LoginEmailActivity extends AppCompatActivity {
 
     //defining views
@@ -34,17 +44,25 @@ public class LoginEmailActivity extends AppCompatActivity {
     private EditText editTextPassword;
     private TextView textViewSignup;
 
-    //firebase auth object
-    private FirebaseAuth firebaseAuth;
+    private LoginButton loginButton;
+    private CallbackManager callbackManager;
 
     //progress dialog
     private ProgressDialog progressDialog;
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        setContentView(R.layout.activity_login_email);
         setContentView(R.layout.activity_login_test);
+
+        callbackManager = CallbackManager.Factory.create();
 
         //getting firebase auth object
 //        firebaseAuth = FirebaseAuth.getInstance();
@@ -80,6 +98,76 @@ public class LoginEmailActivity extends AppCompatActivity {
                 startActivity(new Intent(LoginEmailActivity.this, RegisterEmailActivity.class));
             }
         });
+
+        loginButton = (LoginButton) findViewById(R.id.login_button_fb);
+        loginButton.setReadPermissions("email", "public_profile");
+
+        // Callback registration
+        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.d(TAG, "facebook:onSuccess:" + loginResult);
+                handleFacebookAccessToken(loginResult.getAccessToken());
+                goToMainActivity();
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(TAG, "facebook:onCancel");
+            }
+
+            @Override
+            public void onError(FacebookException exception) {
+                Log.d(TAG, "facebook:onError", exception);
+            }
+        });
+
+    }
+
+    private void handleFacebookAccessToken(final AccessToken accessToken) {
+
+        progressDialog.setMessage("Iniciando sesion, por favor espere...");
+        progressDialog.show();
+
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        // set your desired log level
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+        // add your other interceptors …
+        // add logging as last interceptor
+        httpClient.addInterceptor(logging);  // <-- this is the important line!
+
+        Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(LoginService.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(httpClient.build())
+            .build();
+
+        LoginService loginService = retrofit.create(LoginService.class);
+        FBUser fbuser = new FBUser(accessToken.getUserId(), accessToken.getToken());
+        Call<Token> callFB = loginService.generateToken(fbuser);
+        callFB.enqueue(new Callback<Token>() {
+            @Override
+            public void onResponse(final Call<Token> call, final Response<Token> response) {
+                progressDialog.hide();
+                if (response.code() != 401) {
+                    Toast.makeText(LoginEmailActivity.this, "Logueo de Facebook con exito", Toast.LENGTH_LONG).show();
+                    SharedPreferences settings = PreferenceManager
+                        .getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("auth_token", response.body().getToken());
+                    editor.commit();
+                    goToMainActivity();
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<Token> call, final Throwable t) {
+                Toast.makeText(LoginEmailActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                progressDialog.hide();
+            }
+        });
+
     }
 
     //method for user login

@@ -17,6 +17,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 
 public class MainActivity extends AppCompatActivity
@@ -118,6 +120,9 @@ public class MainActivity extends AppCompatActivity
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("auth_token", "null");
                 editor.commit();
+                if (LoginManager.getInstance() != null) {
+                    LoginManager.getInstance().logOut();
+                }
             }
 
             Intent i = new Intent(MainActivity.this, LoginEmailActivity.class);

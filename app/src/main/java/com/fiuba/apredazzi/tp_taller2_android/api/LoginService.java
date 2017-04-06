@@ -1,5 +1,6 @@
 package com.fiuba.apredazzi.tp_taller2_android.api;
 
+import com.fiuba.apredazzi.tp_taller2_android.model.FBUser;
 import com.fiuba.apredazzi.tp_taller2_android.model.Token;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import okhttp3.ResponseBody;
@@ -23,5 +24,8 @@ public interface LoginService {
 
     @POST("tokens")
     Call<Token> generateToken(@Body User user);
+
+    @POST("social/tokens")
+    Call<Token> generateToken(@Body FBUser fbuser);
 
 }
