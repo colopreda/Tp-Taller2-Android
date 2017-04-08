@@ -6,13 +6,15 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.adapter.SongAdapter;
+import com.fiuba.apredazzi.tp_taller2_android.interfaces.RecyclerViewClickListener;
 import com.fiuba.apredazzi.tp_taller2_android.model.Song;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SongsListActivity extends AppCompatActivity {
+public class SongsListActivity extends AppCompatActivity implements RecyclerViewClickListener {
 
     private List<Song> songsList;
     private RecyclerView mRecyclerView;
@@ -31,7 +33,7 @@ public class SongsListActivity extends AppCompatActivity {
         loadAdapterWithMock();
 
         progressBar.setVisibility(View.GONE);
-        adapter = new SongAdapter(SongsListActivity.this, songsList);
+        adapter = new SongAdapter(SongsListActivity.this, songsList, this);
         mRecyclerView.setAdapter(adapter);
     }
 
@@ -44,5 +46,11 @@ public class SongsListActivity extends AppCompatActivity {
             song.setArtist("Artista " + i);
             songsList.add(song);
         }
+    }
+
+    @Override
+    public void recyclerViewListClicked(final View v, final int position) {
+        Song song = songsList.get(position);
+        Toast.makeText(SongsListActivity.this, "Cliqueaste en la canción " + song.getTitle(), Toast.LENGTH_LONG).show();
     }
 }

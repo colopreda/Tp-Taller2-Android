@@ -7,6 +7,7 @@
     android:layout_marginBottom="2dp"
     cardview:cardCornerRadius="2dp"
     cardview:cardElevation="3dp"
+    android:id="@+id/cardview_song"
     cardview:cardUseCompatPadding="true">
 
     <LinearLayout

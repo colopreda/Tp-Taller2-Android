@@ -1,6 +1,7 @@
 package com.fiuba.apredazzi.tp_taller2_android.adapter;
 
 import android.content.Context;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.fiuba.apredazzi.tp_taller2_android.R;
+import com.fiuba.apredazzi.tp_taller2_android.interfaces.RecyclerViewClickListener;
 import com.fiuba.apredazzi.tp_taller2_android.model.Song;
 import java.util.List;
 
@@ -20,10 +22,12 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.CustomViewHold
 
     private List<Song> feedItemList;
     private Context mContext;
+    private static RecyclerViewClickListener mListener;
 
-    public SongAdapter(Context context, List<Song> feedItemList) {
+    public SongAdapter(Context context, List<Song> feedItemList, RecyclerViewClickListener itemClickListener) {
         this.feedItemList = feedItemList;
         this.mContext = context;
+        this.mListener = itemClickListener;
     }
 
     @Override
@@ -55,16 +59,25 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.CustomViewHold
         return (null != feedItemList ? feedItemList.size() : 0);
     }
 
-    class CustomViewHolder extends RecyclerView.ViewHolder {
+    class CustomViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         protected ImageView imageView;
         protected TextView textViewTitle;
         protected TextView textViewSubtitle;
+        protected CardView cardView;
 
         public CustomViewHolder(View view) {
             super(view);
             imageView = (ImageView) view.findViewById(R.id.thumbnail_row);
             textViewTitle = (TextView) view.findViewById(R.id.title_row);
             textViewSubtitle = (TextView) view.findViewById(R.id.subtitle_row);
+            cardView = (CardView) view.findViewById(R.id.cardview_song);
+
+            cardView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(final View v) {
+            mListener.recyclerViewListClicked(v, getLayoutPosition());
         }
     }
 }
