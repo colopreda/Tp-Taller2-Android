@@ -105,7 +105,8 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_home) {
 
         } else if (id == R.id.nav_canciones) {
-
+            Intent i = new Intent(MainActivity.this, SongsListActivity.class);
+            startActivity(i);
         } else if (id == R.id.nav_playing) {
 
         } else if (id == R.id.nav_chat) {

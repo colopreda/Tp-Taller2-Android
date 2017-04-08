@@ -35,6 +35,8 @@
             android:label="@string/title_activity_main"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         </activity>
+        <activity android:name=".activities.SongsListActivity">
+        </activity>
     </application>
 
 </manifest>
