@@ -20,10 +20,18 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
 import com.fiuba.apredazzi.tp_taller2_android.R;
+import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
+import com.fiuba.apredazzi.tp_taller2_android.api.UsersService;
+import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends BaseActivity {
 
@@ -54,6 +62,24 @@ public class MainActivity extends BaseActivity {
 
         if (auth_token_string != null) {
             userEmail.setText(auth_token_string);
+            UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+            Call<List<User>> listUsuarios = usersService.getAllUsers();
+            listUsuarios.enqueue(new Callback<List<User>>() {
+                @Override
+                public void onResponse(final Call<List<User>> call, final Response<List<User>> response) {
+                    if (response.isSuccessful()) {
+                        List<User> usuarios = response.body();
+                        Toast.makeText(MainActivity.this, "Recibi usuarios", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Falle onResponse: " + response.errorBody(), Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(final Call<List<User>> call, final Throwable t) {
+                    Toast.makeText(MainActivity.this, "Falle", Toast.LENGTH_LONG).show();
+                }
+            });
         } else {
             userEmail.setText("No hay token seteado");
         }
