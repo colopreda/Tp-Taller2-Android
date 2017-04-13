@@ -13,6 +13,11 @@ public interface UsersService {
 
     String BASE_URL = "https://music-io-shared-server.herokuapp.com/";
 
+    @GET("users/me")
+    Call<User> getUserMe();
+
     @GET("users")
     Call<List<User>> getAllUsers();
+
+
 }
