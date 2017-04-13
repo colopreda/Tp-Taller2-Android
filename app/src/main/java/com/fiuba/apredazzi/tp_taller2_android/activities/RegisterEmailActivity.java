@@ -163,7 +163,7 @@ public class RegisterEmailActivity extends AppCompatActivity {
                 int statusCode = response.code();
                 if (statusCode == 201) {
                     finish();
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                    startActivity(new Intent(getApplicationContext(), LoginEmailActivity.class));
                     Toast.makeText(RegisterEmailActivity.this, "Registro con exito", Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(RegisterEmailActivity.this, "Registration Error code != 200", Toast.LENGTH_LONG).show();

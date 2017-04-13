@@ -1,11 +1,13 @@
 package com.fiuba.apredazzi.tp_taller2_android.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,37 +18,39 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
+import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
 import com.fiuba.apredazzi.tp_taller2_android.R;
+import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
+import com.fiuba.apredazzi.tp_taller2_android.api.UsersService;
+import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity
-    implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends BaseActivity {
 
     private TextView userEmail;
     private TextView nameDrawer;
     private TextView emailDrawer;
-    private Button logout;
 
     String auth_token_string;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("music.io");
-        setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.content_frame);
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        //inflate your activity layout here!
+        View contentView = inflater.inflate(R.layout.content_main, frameLayout, false);
+        frameLayout.addView(contentView);
 
         userEmail = (TextView) findViewById(R.id.user_email);
         nameDrawer = (TextView) findViewById(R.id.name_drawer);
@@ -58,79 +62,27 @@ public class MainActivity extends AppCompatActivity
 
         if (auth_token_string != null) {
             userEmail.setText(auth_token_string);
+            UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+            Call<List<User>> listUsuarios = usersService.getAllUsers();
+            listUsuarios.enqueue(new Callback<List<User>>() {
+                @Override
+                public void onResponse(final Call<List<User>> call, final Response<List<User>> response) {
+                    if (response.isSuccessful()) {
+                        List<User> usuarios = response.body();
+                        Toast.makeText(MainActivity.this, "Recibi usuarios", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Falle onResponse: " + response.errorBody(), Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(final Call<List<User>> call, final Throwable t) {
+                    Toast.makeText(MainActivity.this, "Falle", Toast.LENGTH_LONG).show();
+                }
+            });
         } else {
             userEmail.setText("No hay token seteado");
         }
 
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //  getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_home) {
-
-        } else if (id == R.id.nav_canciones) {
-
-        } else if (id == R.id.nav_playing) {
-
-        } else if (id == R.id.nav_chat) {
-
-        } else if (id == R.id.nav_settings) {
-            Intent i = new Intent(MainActivity.this, ProfileActivity.class);
-            startActivity(i);
-        } else if (id == R.id.nav_log_out) {
-            if (auth_token_string != null) {
-                SharedPreferences settings = PreferenceManager
-                    .getDefaultSharedPreferences(getApplicationContext());
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString("auth_token", "null");
-                editor.commit();
-                if (LoginManager.getInstance() != null) {
-                    LoginManager.getInstance().logOut();
-                }
-            }
-
-            Intent i = new Intent(MainActivity.this, LoginEmailActivity.class);
-            startActivity(i);
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 }

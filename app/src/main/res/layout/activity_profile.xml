@@ -36,29 +36,36 @@
             android:elevation="4dp"
             android:paddingBottom="24dp">
 
-            <ImageView
-                android:id="@+id/drop_down_option_menu"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
-                android:tint="@android:color/white"
-                android:src="@drawable/ic_more_vert_black_24dp" />
-
-            <TextView
+            <LinearLayout
                 android:id="@+id/user_profile_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="76dp"
-                android:text="Juan Martin Perez"
-                android:textColor="#fff"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="76dp">
+
+                <TextView
+                    android:id="@+id/name_profile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Juan Martin Perez"
+                    android:textColor="#fff"
+                    android:textSize="24sp"
+                    android:textStyle="bold"/>
+
+                <ImageView
+                    android:id="@+id/edit_name_profile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="12dp"
+                    android:layout_gravity="center_vertical"
+                    android:tint="#fff"
+                    android:src="@drawable/ic_edit"/>
+
+            </LinearLayout>
+
 
             <TextView
-                android:id="@+id/user_profile_short_bio"
+                android:id="@+id/email_profile"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/user_profile_name"
@@ -78,16 +85,20 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/location_textview"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:background="#fff"
                 android:clickable="true"
                 android:elevation="4dp"
+                android:gravity="center_vertical"
+                android:drawableStart="@drawable/ic_location"
                 android:padding="20dp"
-                android:text="Android Profile UI Design" />
+                android:text="  Ubicación: Vicente Lopez" />
 
             <TextView
+                android:id="@+id/textView2"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
@@ -95,9 +106,11 @@
                 android:layout_marginTop="3dp"
                 android:background="#fff"
                 android:clickable="true"
+                android:drawableStart="@drawable/ic_contacts"
                 android:elevation="4dp"
+                android:gravity="center_vertical"
                 android:padding="20dp"
-                android:text="Android Profile XMl UI Design" />
+                android:text="  Contactos: "/>
 
             <TextView
                 android:layout_width="fill_parent"
@@ -107,29 +120,10 @@
                 android:clickable="true"
                 android:elevation="4dp"
                 android:padding="20dp"
-                android:text="Android Profile UI Design" />
+                android:gravity="center_vertical"
+                android:drawableLeft="@drawable/ic_person"
+                android:text="  Actividad: " />
 
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:layout_marginBottom="3dp"
-                android:layout_marginTop="3dp"
-                android:background="#fff"
-                android:clickable="true"
-                android:elevation="4dp"
-                android:padding="20dp"
-                android:text="Android Profile XMl UI Design" />
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:background="#fff"
-                android:clickable="true"
-                android:elevation="4dp"
-                android:padding="20dp"
-                android:text="Android Profile UI Design" />
         </LinearLayout>
     </RelativeLayout>
 </ScrollView>
