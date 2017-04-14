@@ -60,29 +60,57 @@ public class MainActivity extends BaseActivity {
             .getDefaultSharedPreferences(getApplicationContext());
         auth_token_string = settings.getString("auth_token", "null");
 
-        if (auth_token_string != null) {
+        if (!auth_token_string.equals("null")) {
             userEmail.setText(auth_token_string);
-            UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
-            Call<List<User>> listUsuarios = usersService.getAllUsers();
-            listUsuarios.enqueue(new Callback<List<User>>() {
-                @Override
-                public void onResponse(final Call<List<User>> call, final Response<List<User>> response) {
-                    if (response.isSuccessful()) {
-                        List<User> usuarios = response.body();
-                        Toast.makeText(MainActivity.this, "Recibi usuarios", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Falle onResponse: " + response.errorBody(), Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(final Call<List<User>> call, final Throwable t) {
-                    Toast.makeText(MainActivity.this, "Falle", Toast.LENGTH_LONG).show();
-                }
-            });
+            getMe();
+            getUsers();
         } else {
             userEmail.setText("No hay token seteado");
         }
 
+    }
+
+    private void getMe() {
+        UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+        Call<User> getMe = usersService.getUserMe();
+        getMe.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(final Call<User> call, final Response<User> response) {
+                if (response.isSuccessful()) {
+                    User me = response.body();
+                    String full_name = me.getFirst_name() + " " + me.getLast_name();
+                    setNameAndEmail(full_name, me.getEmail());
+                    Toast.makeText(MainActivity.this, "Nombre e email OK", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Falle onResponse ME: " + response.errorBody(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<User> call, final Throwable t) {
+                Toast.makeText(MainActivity.this, "Falle ME", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void getUsers() {
+        UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+        Call<List<User>> listUsuarios = usersService.getAllUsers();
+        listUsuarios.enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(final Call<List<User>> call, final Response<List<User>> response) {
+                if (response.isSuccessful()) {
+                    List<User> usuarios = response.body();
+                    Toast.makeText(MainActivity.this, "Recibi usuarios", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Falle onResponse: " + response.errorBody(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<List<User>> call, final Throwable t) {
+                Toast.makeText(MainActivity.this, "Falle", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

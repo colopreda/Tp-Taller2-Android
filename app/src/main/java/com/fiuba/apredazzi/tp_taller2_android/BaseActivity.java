@@ -14,6 +14,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.widget.TextView;
 import com.facebook.login.LoginManager;
 import com.fiuba.apredazzi.tp_taller2_android.activities.LoginEmailActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.MainActivity;
@@ -42,6 +43,12 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        String saved_name = settings.getString("name_user", "null");
+        String saved_email = settings.getString("email_user", "null");
+
     }
 
     @Override
@@ -115,5 +122,33 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    protected void setNameAndEmail(String strName, String strEmail) {
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        TextView name = (TextView) navigationView.findViewById(R.id.name_drawer);
+        TextView email = (TextView) navigationView.findViewById(R.id.email_drawer);
+        name.setText(strName);
+        email.setText(strEmail);
+
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("name_user", strName);
+        editor.putString("email_user", strEmail);
+        editor.commit();
+    }
+
+    protected String getSavedName() {
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        return settings.getString("name_user", "null");
+    }
+
+    protected String getSavedEmail() {
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        return settings.getString("email_user", "null");
     }
 }

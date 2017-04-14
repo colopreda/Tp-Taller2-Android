@@ -2,8 +2,12 @@ package com.fiuba.apredazzi.tp_taller2_android.api;
 
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import java.util.List;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
 
 /**
  * Created by apredazzi on 4/11/17.
@@ -15,6 +19,9 @@ public interface UsersService {
 
     @GET("users/me")
     Call<User> getUserMe();
+
+    @PUT("users/me")
+    Call<ResponseBody> modifyUserMe(@Body User user);
 
     @GET("users")
     Call<List<User>> getAllUsers();
