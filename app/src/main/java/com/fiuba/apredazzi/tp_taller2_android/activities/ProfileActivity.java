@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.app.Activity;
 import android.preference.PreferenceManager;
+import android.support.design.widget.NavigationView;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -69,7 +70,7 @@ public class ProfileActivity extends BaseActivity {
 
         SharedPreferences settings = PreferenceManager
             .getDefaultSharedPreferences(getApplicationContext());
-        auth_token_string = settings.getString("auth_token", "null");
+        auth_token_string = settings.getString("auth_token", "null");git
     }
 
     public void nameEmailDialg() {
