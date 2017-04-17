@@ -17,6 +17,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    dexOptions {
+        preDexLibraries = false
+    }
 }
 
 dependencies {
@@ -27,6 +30,16 @@ dependencies {
 
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.google.firebase:firebase-auth:9.6.1'
+    // Displaying images
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    //Database
+    compile 'com.google.firebase:firebase-database:9.6.1'
+    //Firebase Storage
+    compile 'com.google.firebase:firebase-storage:9.6.1'
+    //Firebase Messaging
+    compile 'com.google.firebase:firebase-messaging:9.6.1'
+    //Firebase Remote Config
+    compile 'com.google.firebase:firebase-config:9.6.1'
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile 'com.google.code.gson:gson:2.7'
     compile 'com.squareup.retrofit2:retrofit:2.1.0'

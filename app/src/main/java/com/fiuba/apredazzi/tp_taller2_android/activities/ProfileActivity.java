@@ -70,7 +70,7 @@ public class ProfileActivity extends BaseActivity {
 
         SharedPreferences settings = PreferenceManager
             .getDefaultSharedPreferences(getApplicationContext());
-        auth_token_string = settings.getString("auth_token", "null");git
+        auth_token_string = settings.getString("auth_token", "null");
     }
 
     public void nameEmailDialg() {
