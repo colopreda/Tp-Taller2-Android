@@ -23,6 +23,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -127,12 +128,25 @@ public class RegisterEmailActivity extends AppCompatActivity {
                     //checking if success
                     if (task.isSuccessful()) {
                         FirebaseUser userRegistered = firebaseAuth.getCurrentUser();
-                        if (userRegistered.getUid() != null) {
-                            User user = new User(email, first_name, last_name, password);
-                            registerSS(user);
-                        } else {
-                            Toast.makeText(RegisterEmailActivity.this, "Registration Error GUID", Toast.LENGTH_LONG).show();
-                        }
+                        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(first_name + " " + last_name)
+                            .build();
+
+                        userRegistered.updateProfile(profileUpdates)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        FirebaseUser userFirebase = firebaseAuth.getCurrentUser();
+                                        if (userFirebase.getUid() != null) {
+                                            User user = new User(email, first_name, last_name, password);
+                                            registerSS(user);
+                                        } else {
+                                            Toast.makeText(RegisterEmailActivity.this, "Registration Error GUID", Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+                                }
+                            });
                     } else {
                         //display some message here
                         Toast.makeText(RegisterEmailActivity.this, "Registration Error Task Unsuccessful", Toast.LENGTH_LONG).show();
