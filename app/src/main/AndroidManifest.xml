@@ -16,15 +16,15 @@
             android:value="@string/facebook_app_id"/>
 
         <activity android:name=".activities.LoginActivity">
+        </activity>
+        <activity android:name=".activities.RegisterEmailActivity">
+        </activity>
+        <activity android:name=".activities.LoginEmailActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity>
-        <activity android:name=".activities.RegisterEmailActivity">
-        </activity>
-        <activity android:name=".activities.LoginEmailActivity">
         </activity>
         <activity
             android:name=".activities.ProfileActivity"
@@ -38,6 +38,8 @@
         <activity android:name=".activities.SongsListActivity">
         </activity>
         <activity android:name=".BaseActivity">
+        </activity>
+        <activity android:name=".activities.ChatActivity">
         </activity>
     </application>
 

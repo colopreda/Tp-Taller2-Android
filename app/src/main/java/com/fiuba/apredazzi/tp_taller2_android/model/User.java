@@ -8,14 +8,14 @@ public class User {
 
     String id;
     String email;
-    String first_name;
-    String last_name;
+    String firstName;
+    String lastName;
     String password;
 
     public User(String email, String first_name, String last_name, String password) {
         this.email = email;
-        this.first_name = first_name;
-        this.last_name = last_name;
+        this.firstName = first_name;
+        this.lastName = last_name;
         this.password = password;
     }
 
@@ -41,19 +41,19 @@ public class User {
     }
 
     public String getFirst_name() {
-        return first_name;
+        return firstName;
     }
 
     public void setFirst_name(final String first_name) {
-        this.first_name = first_name;
+        this.firstName = first_name;
     }
 
     public String getLast_name() {
-        return last_name;
+        return lastName;
     }
 
     public void setLast_name(final String last_name) {
-        this.last_name = last_name;
+        this.lastName = last_name;
     }
 
     public String getPassword() {
