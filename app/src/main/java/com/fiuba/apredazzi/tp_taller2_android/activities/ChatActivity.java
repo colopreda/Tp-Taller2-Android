@@ -37,6 +37,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
@@ -78,7 +79,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ChatActivity extends BaseActivity implements
-        GoogleApiClient.OnConnectionFailedListener {
+    GoogleApiClient.OnConnectionFailedListener {
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView messageTextView;
@@ -99,11 +100,13 @@ public class ChatActivity extends BaseActivity implements
     public static final String MESSAGES_CHILD = "messages";
     private static final int REQUEST_INVITE = 1;
     private static final int REQUEST_IMAGE = 2;
-    public static final int DEFAULT_MSG_LENGTH_LIMIT = 10;
+    public static final int DEFAULT_MSG_LENGTH_LIMIT = 100;
     public static final String ANONYMOUS = "anonymous";
     private static final String MESSAGE_SENT_EVENT = "message_sent";
     private static final String MESSAGE_URL = "https://musicio-75fa2.firebaseio.com/messages/";
     private static final String LOADING_IMAGE_URL = "https://www.google.com/images/spin-32.gif";
+
+    private static final String MESSAGE_ROOMS = "chat_rooms";
 
     private String mUsername;
     private String mPhotoUrl;
@@ -120,7 +123,6 @@ public class ChatActivity extends BaseActivity implements
     private FirebaseAnalytics mFirebaseAnalytics;
     private EditText mMessageEditText;
     private ImageView mAddMessageImageView;
-    private AdView mAdView;
     private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private GoogleApiClient mGoogleApiClient;
 
@@ -138,7 +140,7 @@ public class ChatActivity extends BaseActivity implements
 
         if (mFirebaseUser == null) {
             // Not signed in, launch the Sign In activity
-            
+
         } else {
             mUsername = mFirebaseUser.getEmail();
             if (mFirebaseUser.getPhotoUrl() != null) {
@@ -147,106 +149,44 @@ public class ChatActivity extends BaseActivity implements
         }
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
-                .addApi(Auth.GOOGLE_SIGN_IN_API)
-                .build();
+            .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+            .addApi(Auth.GOOGLE_SIGN_IN_API)
+            .build();
 
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mMessageRecyclerView = (RecyclerView) findViewById(R.id.messageRecyclerView);
         mLinearLayoutManager = new LinearLayoutManager(this);
         mLinearLayoutManager.setStackFromEnd(true);
 
+        final String receiverID = getIntent().getExtras().getString("id_receiver");
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        final String senderId = settings.getString("myId", "null");
+        Toast.makeText(ChatActivity.this, "Recibiste usuario: " + receiverID, Toast.LENGTH_LONG).show();
+
+        final String room_type_1 = senderId + "_" + receiverID;
+        final String room_type_2 = receiverID + "_" + senderId;
+
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<FriendlyMessage, MessageViewHolder>(
-                FriendlyMessage.class,
-                R.layout.item_message,
-                MessageViewHolder.class,
-                mFirebaseDatabaseReference.child(MESSAGES_CHILD)) {
-
-            @Override
-            protected FriendlyMessage parseSnapshot(DataSnapshot snapshot) {
-                FriendlyMessage friendlyMessage = super.parseSnapshot(snapshot);
-                if (friendlyMessage != null) {
-                    friendlyMessage.setId(snapshot.getKey());
-                }
-                return friendlyMessage;
-            }
-
-            @Override
-            protected void populateViewHolder(final MessageViewHolder viewHolder,
-                                              FriendlyMessage friendlyMessage, int position) {
-                mProgressBar.setVisibility(ProgressBar.INVISIBLE);
-                if (friendlyMessage.getText() != null) {
-                    viewHolder.messageTextView.setText(friendlyMessage.getText());
-                    viewHolder.messageTextView.setVisibility(TextView.VISIBLE);
-                    viewHolder.messageImageView.setVisibility(ImageView.GONE);
-                } else {
-                    String imageUrl = friendlyMessage.getImageUrl();
-                    if (imageUrl.startsWith("gs://")) {
-                        StorageReference storageReference = FirebaseStorage.getInstance()
-                                .getReferenceFromUrl(imageUrl);
-                        storageReference.getDownloadUrl().addOnCompleteListener(
-                                new OnCompleteListener<Uri>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Uri> task) {
-                                if (task.isSuccessful()) {
-                                    String downloadUrl = task.getResult().toString();
-                                    Glide.with(viewHolder.messageImageView.getContext())
-                                            .load(downloadUrl)
-                                            .into(viewHolder.messageImageView);
-                                } else {
-                                    Log.w(TAG, "Getting download url was not successful.",
-                                            task.getException());
-                                }
-                            }
-                        });
+        mFirebaseDatabaseReference.child(MESSAGE_ROOMS)
+            .getRef()
+            .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(final DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.hasChild(room_type_2)) {
+                        llamarAdapter(room_type_2, true);
+                    } else if(dataSnapshot.hasChild(room_type_1)) {
+                        llamarAdapter(room_type_1, true);
                     } else {
-                        Glide.with(viewHolder.messageImageView.getContext())
-                                .load(friendlyMessage.getImageUrl())
-                                .into(viewHolder.messageImageView);
+                        llamarAdapter(room_type_1, false);
                     }
-                    viewHolder.messageImageView.setVisibility(ImageView.VISIBLE);
-                    viewHolder.messageTextView.setVisibility(TextView.GONE);
                 }
 
-
-                viewHolder.messengerTextView.setText(friendlyMessage.getName());
-                if (friendlyMessage.getPhotoUrl() == null) {
-                    viewHolder.messengerImageView.setImageDrawable(ContextCompat.getDrawable(ChatActivity.this,
-                            R.drawable.ic_account_circle_black_36dp));
-                } else {
-                    Glide.with(ChatActivity.this)
-                            .load(friendlyMessage.getPhotoUrl())
-                            .into(viewHolder.messengerImageView);
+                @Override
+                public void onCancelled(final DatabaseError databaseError) {
+                    Log.d("DATABASE", databaseError.toString());
                 }
-
-                if (friendlyMessage.getText() != null) {
-                    // write this message to the on-device index
-                    FirebaseAppIndex.getInstance().update(getMessageIndexable(friendlyMessage));
-                }
-
-                // log a view action on it
-                FirebaseUserActions.getInstance().end(getMessageViewAction(friendlyMessage));
-            }
-        };
-
-        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                super.onItemRangeInserted(positionStart, itemCount);
-                int friendlyMessageCount = mFirebaseAdapter.getItemCount();
-                int lastVisiblePosition = mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
-                // If the recycler view is initially being loaded or the user is at the bottom of the list, scroll
-                // to the bottom of the list to show the newly added message.
-                if (lastVisiblePosition == -1 ||
-                        (positionStart >= (friendlyMessageCount - 1) && lastVisiblePosition == (positionStart - 1))) {
-                    mMessageRecyclerView.scrollToPosition(positionStart);
-                }
-            }
-        });
-
-        mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mMessageRecyclerView.setAdapter(mFirebaseAdapter);
+            });
 
         // Initialize Firebase Measurement.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
@@ -256,25 +196,23 @@ public class ChatActivity extends BaseActivity implements
 
         // Define Firebase Remote Config Settings.
         FirebaseRemoteConfigSettings firebaseRemoteConfigSettings =
-                new FirebaseRemoteConfigSettings.Builder()
+            new FirebaseRemoteConfigSettings.Builder()
                 .setDeveloperModeEnabled(true)
                 .build();
 
         // Define default config values. Defaults are used when fetched config values are not
         // available. Eg: if an error occurred fetching values from the server.
         Map<String, Object> defaultConfigMap = new HashMap<>();
-        defaultConfigMap.put("friendly_msg_length", 10L);
+        defaultConfigMap.put("friendly_msg_length", 100L);
 
         // Apply config settings and default values.
         mFirebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);
         mFirebaseRemoteConfig.setDefaults(defaultConfigMap);
 
         // Fetch remote config.
-        fetchConfig();
+//        fetchConfig();
 
         mMessageEditText = (EditText) findViewById(R.id.messageEditText);
-        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(mSharedPreferences
-                .getInt(CodelabPreferences.FRIENDLY_MSG_LENGTH, DEFAULT_MSG_LENGTH_LIMIT))});
         mMessageEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -309,13 +247,32 @@ public class ChatActivity extends BaseActivity implements
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FriendlyMessage friendlyMessage = new FriendlyMessage(mMessageEditText.getText().toString(), mUsername,
-                        mPhotoUrl, null);
-                mFirebaseDatabaseReference.child(MESSAGES_CHILD).push().setValue(friendlyMessage);
+                final FriendlyMessage friendlyMessage =
+                    new FriendlyMessage(mMessageEditText.getText().toString(), mUsername,
+                        mPhotoUrl, null, senderId, receiverID, System.currentTimeMillis());
+//                mFirebaseDatabaseReference.child(MESSAGES_CHILD).push().setValue(friendlyMessage);
                 mFirebaseDatabaseReference.getRef().addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(final DataSnapshot dataSnapshot) {
-
+                        if (dataSnapshot.hasChild(room_type_1)) {
+                            Log.e(TAG, "sendMessageToFirebaseUser: " + room_type_1 + " exists");
+                            mFirebaseDatabaseReference.child(MESSAGE_ROOMS)
+                                .child(room_type_1)
+                                .child(String.valueOf(friendlyMessage.getTimestamp()))
+                                .setValue(friendlyMessage);
+                        } else if (dataSnapshot.hasChild(room_type_2)) {
+                            Log.e(TAG, "sendMessageToFirebaseUser: " + room_type_2 + " exists");
+                            mFirebaseDatabaseReference.child(MESSAGE_ROOMS)
+                                .child(room_type_2)
+                                .child(String.valueOf(friendlyMessage.getTimestamp()))
+                                .setValue(friendlyMessage);
+                        } else {
+                            Log.e(TAG, "sendMessageToFirebaseUser: success");
+                            mFirebaseDatabaseReference.child(MESSAGE_ROOMS)
+                                .child(room_type_1)
+                                .child(String.valueOf(friendlyMessage.getTimestamp()))
+                                .setValue(friendlyMessage);
+                        }
                     }
 
                     @Override
@@ -329,55 +286,128 @@ public class ChatActivity extends BaseActivity implements
         });
     }
 
+    private void llamarAdapter(final String roomType, boolean progress) {
+
+        if (!progress) {
+            mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+        }
+
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<FriendlyMessage, MessageViewHolder>(
+            FriendlyMessage.class,
+            R.layout.item_message,
+            MessageViewHolder.class,
+            mFirebaseDatabaseReference.child(MESSAGE_ROOMS).child(roomType)) {
+
+            @Override
+            protected FriendlyMessage parseSnapshot(DataSnapshot snapshot) {
+                FriendlyMessage friendlyMessage = super.parseSnapshot(snapshot);
+                if (friendlyMessage != null) {
+                    friendlyMessage.setId(snapshot.getKey());
+                }
+                return friendlyMessage;
+            }
+
+            @Override
+            protected void populateViewHolder(final MessageViewHolder viewHolder,
+                FriendlyMessage friendlyMessage, int position) {
+                mProgressBar.setVisibility(ProgressBar.INVISIBLE);
+                if (friendlyMessage.getText() != null) {
+                    viewHolder.messageTextView.setText(friendlyMessage.getText());
+                    viewHolder.messageTextView.setVisibility(TextView.VISIBLE);
+                    viewHolder.messageImageView.setVisibility(ImageView.GONE);
+                } else {
+                    String imageUrl = friendlyMessage.getImageUrl();
+                    if (imageUrl.startsWith("gs://")) {
+                        StorageReference storageReference = FirebaseStorage.getInstance()
+                            .getReferenceFromUrl(imageUrl);
+                        storageReference.getDownloadUrl().addOnCompleteListener(
+                            new OnCompleteListener<Uri>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Uri> task) {
+                                    if (task.isSuccessful()) {
+                                        String downloadUrl = task.getResult().toString();
+                                        Glide.with(viewHolder.messageImageView.getContext())
+                                            .load(downloadUrl)
+                                            .into(viewHolder.messageImageView);
+                                    } else {
+                                        Log.w(TAG, "Getting download url was not successful.",
+                                            task.getException());
+                                    }
+                                }
+                            });
+                    } else {
+                        Glide.with(viewHolder.messageImageView.getContext())
+                            .load(friendlyMessage.getImageUrl())
+                            .into(viewHolder.messageImageView);
+                    }
+                    viewHolder.messageImageView.setVisibility(ImageView.VISIBLE);
+                    viewHolder.messageTextView.setVisibility(TextView.GONE);
+                }
+
+                viewHolder.messengerTextView.setText(friendlyMessage.getName());
+                if (friendlyMessage.getPhotoUrl() == null) {
+                    viewHolder.messengerImageView.setImageDrawable(ContextCompat.getDrawable(ChatActivity.this,
+                        R.drawable.ic_account_circle_black_36dp));
+                } else {
+                    Glide.with(ChatActivity.this)
+                        .load(friendlyMessage.getPhotoUrl())
+                        .into(viewHolder.messengerImageView);
+                }
+
+                if (friendlyMessage.getText() != null) {
+                    // write this message to the on-device index
+                    FirebaseAppIndex.getInstance().update(getMessageIndexable(friendlyMessage));
+                }
+
+                // log a view action on it
+                FirebaseUserActions.getInstance().end(getMessageViewAction(friendlyMessage));
+            }
+        };
+
+        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                int friendlyMessageCount = mFirebaseAdapter.getItemCount();
+                int lastVisiblePosition = mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
+                // If the recycler view is initially being loaded or the user is at the bottom of the list, scroll
+                // to the bottom of the list to show the newly added message.
+                if (lastVisiblePosition == -1 ||
+                    (positionStart >= (friendlyMessageCount - 1) && lastVisiblePosition == (positionStart - 1))) {
+                    mMessageRecyclerView.scrollToPosition(positionStart);
+                }
+            }
+        });
+
+        mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
+        mMessageRecyclerView.setAdapter(mFirebaseAdapter);
+    }
+
     private Action getMessageViewAction(FriendlyMessage friendlyMessage) {
         return new Action.Builder(Action.Builder.VIEW_ACTION)
-                .setObject(friendlyMessage.getName(), MESSAGE_URL.concat(friendlyMessage.getId()))
-                .setMetadata(new Action.Metadata.Builder().setUpload(false))
-                .build();
+            .setObject(friendlyMessage.getName(), MESSAGE_URL.concat(friendlyMessage.getId()))
+            .setMetadata(new Action.Metadata.Builder().setUpload(false))
+            .build();
     }
 
     private Indexable getMessageIndexable(FriendlyMessage friendlyMessage) {
         PersonBuilder sender = Indexables.personBuilder()
-                .setIsSelf(mUsername.equals(friendlyMessage.getName()))
-                .setName(friendlyMessage.getName())
-                .setUrl(MESSAGE_URL.concat(friendlyMessage.getId() + "/sender"));
+            .setIsSelf(mUsername.equals(friendlyMessage.getName()))
+            .setName(friendlyMessage.getName())
+            .setUrl(MESSAGE_URL.concat(friendlyMessage.getId() + "/sender"));
 
         PersonBuilder recipient = Indexables.personBuilder()
-                .setName(mUsername)
-                .setUrl(MESSAGE_URL.concat(friendlyMessage.getId() + "/recipient"));
+            .setName(mUsername)
+            .setUrl(MESSAGE_URL.concat(friendlyMessage.getId() + "/recipient"));
 
         Indexable messageToIndex = Indexables.messageBuilder()
-                .setName(friendlyMessage.getText())
-                .setUrl(MESSAGE_URL.concat(friendlyMessage.getId()))
-                .setSender(sender)
-                .setRecipient(recipient)
-                .build();
+            .setName(friendlyMessage.getText())
+            .setUrl(MESSAGE_URL.concat(friendlyMessage.getId()))
+            .setSender(sender)
+            .setRecipient(recipient)
+            .build();
 
         return messageToIndex;
-    }
-
-    @Override
-    public void onPause() {
-        if (mAdView != null) {
-            mAdView.pause();
-        }
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (mAdView != null) {
-            mAdView.resume();
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        if (mAdView != null) {
-            mAdView.destroy();
-        }
-        super.onDestroy();
     }
 
     @Override
@@ -406,7 +436,7 @@ public class ChatActivity extends BaseActivity implements
                 startActivity(new Intent(this, LoginEmailActivity.class));
                 return true;
             case R.id.fresh_config_menu:
-                fetchConfig();
+//                fetchConfig();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -419,9 +449,9 @@ public class ChatActivity extends BaseActivity implements
 
     private void sendInvitation() {
         Intent intent = new AppInviteInvitation.IntentBuilder("Enviar invitacion")
-                .setMessage("Invitacion enviada")
-                .setCallToActionText("Call to action")
-                .build();
+            .setMessage("Invitacion enviada")
+            .setCallToActionText("Call to action")
+            .build();
         startActivityForResult(intent, REQUEST_INVITE);
     }
 
@@ -434,22 +464,22 @@ public class ChatActivity extends BaseActivity implements
             cacheExpiration = 0;
         }
         mFirebaseRemoteConfig.fetch(cacheExpiration)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        // Make the fetched config available via FirebaseRemoteConfig get<type> calls.
-                        mFirebaseRemoteConfig.activateFetched();
-                        applyRetrievedLengthLimit();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // There has been an error fetching the config
-                        Log.w(TAG, "Error fetching config", e);
-                        applyRetrievedLengthLimit();
-                    }
-                });
+            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    // Make the fetched config available via FirebaseRemoteConfig get<type> calls.
+                    mFirebaseRemoteConfig.activateFetched();
+                    applyRetrievedLengthLimit();
+                }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    // There has been an error fetching the config
+                    Log.w(TAG, "Error fetching config", e);
+                    applyRetrievedLengthLimit();
+                }
+            });
     }
 
     @Override
@@ -464,27 +494,27 @@ public class ChatActivity extends BaseActivity implements
                     Log.d(TAG, "Uri: " + uri.toString());
 
                     FriendlyMessage tempMessage = new FriendlyMessage(null, mUsername, mPhotoUrl,
-                            LOADING_IMAGE_URL);
+                        LOADING_IMAGE_URL);
                     mFirebaseDatabaseReference.child(MESSAGES_CHILD).push()
-                            .setValue(tempMessage, new DatabaseReference.CompletionListener() {
-                                @Override
-                                public void onComplete(DatabaseError databaseError,
-                                                       DatabaseReference databaseReference) {
-                                    if (databaseError == null) {
-                                        String key = databaseReference.getKey();
-                                        StorageReference storageReference =
-                                                FirebaseStorage.getInstance()
-                                                .getReference(mFirebaseUser.getUid())
-                                                .child(key)
-                                                .child(uri.getLastPathSegment());
+                        .setValue(tempMessage, new DatabaseReference.CompletionListener() {
+                            @Override
+                            public void onComplete(DatabaseError databaseError,
+                                DatabaseReference databaseReference) {
+                                if (databaseError == null) {
+                                    String key = databaseReference.getKey();
+                                    StorageReference storageReference =
+                                        FirebaseStorage.getInstance()
+                                            .getReference(mFirebaseUser.getUid())
+                                            .child(key)
+                                            .child(uri.getLastPathSegment());
 
-                                        putImageInStorage(storageReference, uri, key);
-                                    } else {
-                                        Log.w(TAG, "Unable to write message to database.",
-                                                databaseError.toException());
-                                    }
+                                    putImageInStorage(storageReference, uri, key);
+                                } else {
+                                    Log.w(TAG, "Unable to write message to database.",
+                                        databaseError.toException());
                                 }
-                            });
+                            }
+                        });
                 }
             }
         } else if (requestCode == REQUEST_INVITE) {
@@ -510,22 +540,22 @@ public class ChatActivity extends BaseActivity implements
 
     private void putImageInStorage(StorageReference storageReference, Uri uri, final String key) {
         storageReference.putFile(uri).addOnCompleteListener(ChatActivity.this,
-                new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            FriendlyMessage friendlyMessage =
-                                    new FriendlyMessage(null, mUsername, mPhotoUrl,
-                                            task.getResult().getDownloadUrl()
-                                                    .toString());
-                            mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
-                                    .setValue(friendlyMessage);
-                        } else {
-                            Log.w(TAG, "Image upload task was not successful.",
-                                    task.getException());
-                        }
+            new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        FriendlyMessage friendlyMessage =
+                            new FriendlyMessage(null, mUsername, mPhotoUrl,
+                                task.getResult().getDownloadUrl()
+                                    .toString());
+                        mFirebaseDatabaseReference.child(MESSAGES_CHILD).child(key)
+                            .setValue(friendlyMessage);
+                    } else {
+                        Log.w(TAG, "Image upload task was not successful.",
+                            task.getException());
                     }
-                });
+                }
+            });
     }
 
     /**
@@ -534,7 +564,7 @@ public class ChatActivity extends BaseActivity implements
      */
     private void applyRetrievedLengthLimit() {
         Long friendly_msg_length = mFirebaseRemoteConfig.getLong("friendly_msg_length");
-        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(friendly_msg_length.intValue())});
+        mMessageEditText.setFilters(new InputFilter[] { new InputFilter.LengthFilter(friendly_msg_length.intValue()) });
         Log.d(TAG, "FML is: " + friendly_msg_length);
     }
 
@@ -542,5 +572,4 @@ public class ChatActivity extends BaseActivity implements
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
     }
-
 }

@@ -96,7 +96,7 @@ public class ContactsActivity extends BaseActivity implements RecyclerViewClickL
     public void recyclerViewListClicked(final View v, final int position) {
         User user = contactsList.get(position);
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra("email_receiver", user.getEmail());
+        intent.putExtra("id_receiver", user.getId());
         startActivity(intent);
     }
 }

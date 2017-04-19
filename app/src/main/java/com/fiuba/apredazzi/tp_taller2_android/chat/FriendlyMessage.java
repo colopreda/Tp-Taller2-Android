@@ -20,10 +20,24 @@ public class FriendlyMessage {
     private String id;
     private String text;
     private String name;
+    private String email_sender;
+    private String email_receiver;
     private String photoUrl;
     private String imageUrl;
+    public long timestamp;
 
     public FriendlyMessage() {
+    }
+
+    public FriendlyMessage(String text, String name, String photoUrl, String imageUrl, String email_sender, String email_receiver, long timestamp) {
+        this.text = text;
+        this.name = name;
+        this.photoUrl = photoUrl;
+        this.imageUrl = imageUrl;
+        this.email_receiver = email_receiver;
+        this.email_sender = email_sender;
+        this.timestamp = timestamp;
+
     }
 
     public FriendlyMessage(String text, String name, String photoUrl, String imageUrl) {
@@ -31,6 +45,30 @@ public class FriendlyMessage {
         this.name = name;
         this.photoUrl = photoUrl;
         this.imageUrl = imageUrl;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(final long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getEmail_sender() {
+        return email_sender;
+    }
+
+    public void setEmail_sender(final String email_sender) {
+        this.email_sender = email_sender;
+    }
+
+    public String getEmail_receiver() {
+        return email_receiver;
+    }
+
+    public void setEmail_receiver(final String email_receiver) {
+        this.email_receiver = email_receiver;
     }
 
     public String getId() {
