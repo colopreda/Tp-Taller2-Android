@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -17,7 +18,11 @@ import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.api.LoginService;
 import com.fiuba.apredazzi.tp_taller2_android.model.Token;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -50,14 +55,14 @@ public class RegisterEmailActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
 
         //if getCurrentUser does not returns null
-        if (firebaseAuth.getCurrentUser() != null) {
-            //that means user is already logged in
-            //so close this activity
-            finish();
-
-            //and open profile activity
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
-        }
+//        if (firebaseAuth.getCurrentUser() != null) {
+//            //that means user is already logged in
+//            //so close this activity
+//            finish();
+//
+//            //and open profile activity
+//            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+//        }
 
         //initializing views
         editTextFirstName = (EditText) findViewById(R.id.editTextName);
@@ -90,7 +95,7 @@ public class RegisterEmailActivity extends AppCompatActivity {
 
         //getting email and password from edit texts
         final String email = editTextEmail.getText().toString().trim();
-        String password = editTextPassword.getText().toString().trim();
+        final String password = editTextPassword.getText().toString().trim();
         final String first_name = editTextFirstName.getText().toString().trim();
         final String last_name = editTextLastName.getText().toString().trim();
 
@@ -112,29 +117,29 @@ public class RegisterEmailActivity extends AppCompatActivity {
         progressDialog.show();
 
         User user = new User(email, first_name, last_name, password);
-        registerSS(user);
+//        registerSS(user);
 
         //creating a new user
-//        firebaseAuth.createUserWithEmailAndPassword(email, password)
-//            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                @Override
-//                public void onComplete(@NonNull Task<AuthResult> task) {
-//                    //checking if success
-//                    if (task.isSuccessful()) {
-//                        FirebaseUser userRegistered = firebaseAuth.getCurrentUser();
-//                        if (userRegistered.getUid() != null) {
-//                            User user = new User(email, first_name, last_name,userRegistered.getUid());
-//                            registerSS(user);
-//                        } else {
-//                            Toast.makeText(RegisterEmailActivity.this, "Registration Error GUID", Toast.LENGTH_LONG).show();
-//                        }
-//                    } else {
-//                        //display some message here
-//                        Toast.makeText(RegisterEmailActivity.this, "Registration Error Task Unsuccessful", Toast.LENGTH_LONG).show();
-//                    }
-//                    progressDialog.dismiss();
-//                }
-//            });
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    //checking if success
+                    if (task.isSuccessful()) {
+                        FirebaseUser userRegistered = firebaseAuth.getCurrentUser();
+                        if (userRegistered.getUid() != null) {
+                            User user = new User(email, first_name, last_name, password);
+                            registerSS(user);
+                        } else {
+                            Toast.makeText(RegisterEmailActivity.this, "Registration Error GUID", Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        //display some message here
+                        Toast.makeText(RegisterEmailActivity.this, "Registration Error Task Unsuccessful", Toast.LENGTH_LONG).show();
+                    }
+                    progressDialog.dismiss();
+                }
+            });
     }
 
     private void registerSS(final User userRegister) {

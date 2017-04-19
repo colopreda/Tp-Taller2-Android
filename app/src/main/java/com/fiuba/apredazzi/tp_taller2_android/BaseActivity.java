@@ -15,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import com.facebook.login.LoginManager;
+import com.fiuba.apredazzi.tp_taller2_android.activities.ChatActivity;
+import com.fiuba.apredazzi.tp_taller2_android.activities.ContactsActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.LoginEmailActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.MainActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.ProfileActivity;
@@ -91,7 +93,8 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_playing) {
 
         } else if (id == R.id.nav_chat) {
-
+            Intent i = new Intent(this, ContactsActivity.class);
+            startActivity(i);
         } else if (id == R.id.nav_settings) {
             Intent i = new Intent(this, ProfileActivity.class);
             startActivity(i);

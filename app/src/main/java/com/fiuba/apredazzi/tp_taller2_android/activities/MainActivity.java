@@ -65,21 +65,22 @@ public class MainActivity extends BaseActivity {
         if (auth_token_string != null) {
             userEmail.setText(auth_token_string);
             UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
-            Call<List<User>> listUsuarios = usersService.getAllUsers();
-            listUsuarios.enqueue(new Callback<List<User>>() {
+            Call<User> myUser = usersService.getUserMe();
+            myUser.enqueue(new Callback<User>() {
                 @Override
-                public void onResponse(final Call<List<User>> call, final Response<List<User>> response) {
+                public void onResponse(final Call<User> call, final Response<User> response) {
                     if (response.isSuccessful()) {
-                        List<User> usuarios = response.body();
-                        Toast.makeText(MainActivity.this, "Recibi usuarios", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Falle onResponse: " + response.errorBody(), Toast.LENGTH_LONG).show();
+                        SharedPreferences settingsId = PreferenceManager
+                            .getDefaultSharedPreferences(getApplicationContext());
+                        SharedPreferences.Editor editor = settingsId.edit();
+                        editor.putString("myId", response.body().getId());
+                        editor.commit();
                     }
                 }
 
                 @Override
-                public void onFailure(final Call<List<User>> call, final Throwable t) {
-                    Toast.makeText(MainActivity.this, "Falle", Toast.LENGTH_LONG).show();
+                public void onFailure(final Call<User> call, final Throwable t) {
+
                 }
             });
         } else {
