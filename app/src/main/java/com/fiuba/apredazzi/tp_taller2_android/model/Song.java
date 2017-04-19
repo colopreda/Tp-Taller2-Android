@@ -6,7 +6,7 @@ package com.fiuba.apredazzi.tp_taller2_android.model;
 
 public class Song {
 
-    private String title;
+    private String name;
     private String album;
     private String artist;
     private String url_art;
@@ -14,19 +14,19 @@ public class Song {
     public Song() {
     }
 
-    public Song(final String title, final String album, final String artist, final String url_art) {
-        this.title = title;
+    public Song(final String name, final String album, final String artist, final String url_art) {
+        this.name = name;
         this.album = album;
         this.artist = artist;
         this.url_art = url_art;
     }
 
     public String getTitle() {
-        return title;
+        return name;
     }
 
-    public void setTitle(final String title) {
-        this.title = title;
+    public void setTitle(final String name) {
+        this.name = name;
     }
 
     public String getAlbum() {
