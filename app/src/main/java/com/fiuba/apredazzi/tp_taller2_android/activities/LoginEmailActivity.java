@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -25,6 +26,9 @@ import com.fiuba.apredazzi.tp_taller2_android.api.LoginService;
 import com.fiuba.apredazzi.tp_taller2_android.model.FBUser;
 import com.fiuba.apredazzi.tp_taller2_android.model.Token;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -46,6 +50,7 @@ public class LoginEmailActivity extends AppCompatActivity {
 
     private LoginButton loginButton;
     private CallbackManager callbackManager;
+    private FirebaseAuth firebaseAuth;
 
     //progress dialog
     private ProgressDialog progressDialog;
@@ -65,16 +70,18 @@ public class LoginEmailActivity extends AppCompatActivity {
         callbackManager = CallbackManager.Factory.create();
 
         //getting firebase auth object
-//        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
 
         //if the objects getcurrentuser method is not null
         //means user is already logged in
-//        if (firebaseAuth.getCurrentUser() != null) {
-//            //close this activity
-//            finish();
-//            //opening profile activity
-//            startActivity(new Intent(getApplicationContext(), MainActivity.class));
-//        }
+
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        final String auth_token_string = settings.getString("auth_token", "null");
+        if (!"null".equals(auth_token_string) && firebaseAuth.getCurrentUser() != null) {
+            //checkToken();
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+        }
 
         //initializing views
         editTextEmail = (EditText) findViewById(R.id.editTextEmail);
@@ -172,8 +179,8 @@ public class LoginEmailActivity extends AppCompatActivity {
 
     //method for user login
     private void userLogin() {
-        String email = editTextEmail.getText().toString().trim();
-        String password = editTextPassword.getText().toString().trim();
+        final String email = editTextEmail.getText().toString().trim();
+        final String password = editTextPassword.getText().toString().trim();
 
         //checking if email and passwords are empty
         if (TextUtils.isEmpty(email)) {
@@ -192,6 +199,27 @@ public class LoginEmailActivity extends AppCompatActivity {
         progressDialog.setMessage("Iniciando sesion, por favor espere...");
         progressDialog.show();
 
+        //logging in the user
+        firebaseAuth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    progressDialog.dismiss();
+                    //if the task is successfull
+                    if (task.isSuccessful()) {
+                        //start the profile activity
+                        loginSharedServer(email, password);
+                    }
+                }
+            });
+    }
+
+    private void goToMainActivity() {
+        Intent i = new Intent(LoginEmailActivity.this, MainActivity.class);
+        startActivity(i);
+    }
+
+    private void loginSharedServer(String email, String password) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         // set your desired log level
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -215,7 +243,7 @@ public class LoginEmailActivity extends AppCompatActivity {
             public void onResponse(final Call<Token> call, final Response<Token> response) {
                 progressDialog.hide();
                 Toast.makeText(LoginEmailActivity.this, "Logueo con exito", Toast.LENGTH_LONG).show();
-                if (response.code() != 401) {
+                if (response.code() != 404) {
                     SharedPreferences settings = PreferenceManager
                         .getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor editor = settings.edit();
@@ -232,25 +260,5 @@ public class LoginEmailActivity extends AppCompatActivity {
 
             }
         });
-
-        //logging in the user
-//        firebaseAuth.signInWithEmailAndPassword(email, password)
-//            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                @Override
-//                public void onComplete(@NonNull Task<AuthResult> task) {
-//                    progressDialog.dismiss();
-//                    //if the task is successfull
-//                    if (task.isSuccessful()) {
-//                        //start the profile activity
-//                        finish();
-//                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-//                    }
-//                }
-//            });
-    }
-
-    private void goToMainActivity() {
-        Intent i = new Intent(LoginEmailActivity.this, MainActivity.class);
-        startActivity(i);
     }
 }
