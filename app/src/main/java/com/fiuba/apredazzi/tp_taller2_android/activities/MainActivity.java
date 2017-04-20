@@ -64,29 +64,39 @@ public class MainActivity extends BaseActivity {
 
         if (auth_token_string != null) {
             userEmail.setText(auth_token_string);
-            UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
-            Call<User> myUser = usersService.getUserMe();
-            myUser.enqueue(new Callback<User>() {
-                @Override
-                public void onResponse(final Call<User> call, final Response<User> response) {
-                    if (response.isSuccessful()) {
-                        SharedPreferences settingsId = PreferenceManager
-                            .getDefaultSharedPreferences(getApplicationContext());
-                        SharedPreferences.Editor editor = settingsId.edit();
-                        editor.putString("myId", response.body().getId());
-                        editor.commit();
-                    }
-                }
-
-                @Override
-                public void onFailure(final Call<User> call, final Throwable t) {
-
-                }
-            });
+            getMe();
         } else {
             userEmail.setText("No hay token seteado");
         }
 
+    }
+
+    private void getMe() {
+        UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+        Call<User> getMe = usersService.getUserMe();
+        getMe.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(final Call<User> call, final Response<User> response) {
+                if (response.isSuccessful()) {
+                    User me = response.body();
+                    SharedPreferences settingsId = PreferenceManager
+                        .getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = settingsId.edit();
+                    editor.putString("myId", me.getId());
+                    editor.commit();
+                    String full_name = me.getFirst_name() + " " + me.getLast_name();
+                    setNameAndEmail(full_name, me.getEmail());
+                    Toast.makeText(MainActivity.this, "Nombre e email OK", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Falle onResponse ME: " + response.errorBody(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<User> call, final Throwable t) {
+                Toast.makeText(MainActivity.this, "Falle ME", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
