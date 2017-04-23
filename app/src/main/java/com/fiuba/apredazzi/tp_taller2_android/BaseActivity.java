@@ -22,6 +22,7 @@ import com.fiuba.apredazzi.tp_taller2_android.activities.ContactsActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.LoginEmailActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.MainActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.ProfileActivity;
+import com.fiuba.apredazzi.tp_taller2_android.activities.SongActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.SongsListActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -97,7 +98,8 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             Intent i = new Intent(this, SongsListActivity.class);
             startActivity(i);
         } else if (id == R.id.nav_playing) {
-
+            Intent i = new Intent(this, SongActivity.class);
+            startActivity(i);
         } else if (id == R.id.nav_chat) {
             Intent i = new Intent(this, ContactsActivity.class);
             startActivity(i);
