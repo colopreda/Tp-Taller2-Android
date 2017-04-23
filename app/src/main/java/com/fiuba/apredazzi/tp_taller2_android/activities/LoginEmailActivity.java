@@ -28,7 +28,9 @@ import com.fiuba.apredazzi.tp_taller2_android.model.Token;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -115,7 +117,6 @@ public class LoginEmailActivity extends AppCompatActivity {
             public void onSuccess(LoginResult loginResult) {
                 Log.d(TAG, "facebook:onSuccess:" + loginResult);
                 handleFacebookAccessToken(loginResult.getAccessToken());
-                goToMainActivity();
             }
 
             @Override
@@ -128,7 +129,6 @@ public class LoginEmailActivity extends AppCompatActivity {
                 Log.d(TAG, "facebook:onError", exception);
             }
         });
-
     }
 
     private void handleFacebookAccessToken(final AccessToken accessToken) {
@@ -136,6 +136,17 @@ public class LoginEmailActivity extends AppCompatActivity {
         progressDialog.setMessage("Iniciando sesion, por favor espere...");
         progressDialog.show();
 
+        AuthCredential credential = FacebookAuthProvider.getCredential(accessToken.getToken());
+        firebaseAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull final Task<AuthResult> task) {
+                    facebookLoginSharedServer(accessToken);
+                }
+            });
+    }
+
+    private void facebookLoginSharedServer(AccessToken accessToken) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         // set your desired log level
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -174,7 +185,6 @@ public class LoginEmailActivity extends AppCompatActivity {
                 progressDialog.hide();
             }
         });
-
     }
 
     //method for user login
@@ -257,7 +267,6 @@ public class LoginEmailActivity extends AppCompatActivity {
             public void onFailure(final Call<Token> call, final Throwable t) {
                 Toast.makeText(LoginEmailActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
                 progressDialog.hide();
-
             }
         });
     }

@@ -21,6 +21,7 @@ import com.fiuba.apredazzi.tp_taller2_android.activities.LoginEmailActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.MainActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.ProfileActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.SongsListActivity;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class BaseActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -110,6 +111,8 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
                     LoginManager.getInstance().logOut();
                 }
             }
+
+            FirebaseAuth.getInstance().signOut();
 
             Intent i = new Intent(this, LoginEmailActivity.class);
             startActivity(i);

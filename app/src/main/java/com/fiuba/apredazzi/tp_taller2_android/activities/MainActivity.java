@@ -1,11 +1,13 @@
 package com.fiuba.apredazzi.tp_taller2_android.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,5 +87,23 @@ public class MainActivity extends BaseActivity {
             userEmail.setText("No hay token seteado");
         }
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .setTitle("Salir")
+            .setMessage("¿Estás seguro que deseas salir de la aplicación?")
+            .setPositiveButton("Si", new DialogInterface.OnClickListener()
+            {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+
+            })
+            .setNegativeButton("No", null)
+            .show();
     }
 }
