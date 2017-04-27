@@ -66,6 +66,18 @@
                 <EditText
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:id="@+id/editTextUsername"
+                    android:maxLines="1"
+                    android:hint="Usuario"/>
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
                     android:id="@+id/editTextEmail"
                     android:maxLines="1"
                     android:hint="E-Mail"
@@ -86,12 +98,26 @@
                     android:inputType="textPassword" />
             </android.support.design.widget.TextInputLayout>
 
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/textviewBirthdate"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:maxLines="1"
+                    android:focusable="false"
+                    android:hint="Fecha de nacimiento"/>
+            </android.support.design.widget.TextInputLayout>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textViewSignin"
                 android:layout_gravity="center"
-                android:paddingTop="10dp"
+                android:paddingTop="16dp"
                 android:text="¿Ya tenés cuenta? Inicia sesión." />
 
 
