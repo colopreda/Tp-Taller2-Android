@@ -1,6 +1,7 @@
 package com.fiuba.apredazzi.tp_taller2_android.api;
 
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import java.util.List;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -18,7 +19,7 @@ public interface UsersService {
     String BASE_URL = "https://music-io-shared-server.herokuapp.com/";
 
     @GET("users/me")
-    Call<User> getUserMe();
+    Call<ServerResponse> getUserMe();
 
     @PUT("users/me")
     Call<ResponseBody> modifyUserMe(@Body User user);

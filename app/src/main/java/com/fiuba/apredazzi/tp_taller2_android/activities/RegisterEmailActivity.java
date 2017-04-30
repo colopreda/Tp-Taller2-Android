@@ -1,20 +1,12 @@
 package com.fiuba.apredazzi.tp_taller2_android.activities;
 
-import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -23,7 +15,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.api.LoginService;
-import com.fiuba.apredazzi.tp_taller2_android.model.Token;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -31,7 +22,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -49,6 +39,7 @@ public class RegisterEmailActivity extends AppCompatActivity {
     //defining firebaseauth object
     private FirebaseAuth firebaseAuth;
 
+    private EditText editTextUserName;
     private EditText editTextFirstName;
     private EditText editTextLastName;
     private EditText editTextEmail;
@@ -56,13 +47,15 @@ public class RegisterEmailActivity extends AppCompatActivity {
     private Button buttonSignup;
     private int mDay, mMonth, mYear;
 
-    private EditText textviewBirthdate;
+    private EditText editTextBirthdate;
 
     private TextView textViewSignin;
 
     private ProgressDialog progressDialog;
 
     Calendar myCalendar = Calendar.getInstance();
+
+    private String country;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +81,8 @@ public class RegisterEmailActivity extends AppCompatActivity {
         editTextEmail = (EditText) findViewById(R.id.editTextEmail);
         editTextPassword = (EditText) findViewById(R.id.editTextPassword);
         textViewSignin = (TextView) findViewById(R.id.textViewSignin);
-        textviewBirthdate = (EditText) findViewById(R.id.textviewBirthdate);
+        editTextBirthdate = (EditText) findViewById(R.id.textviewBirthdate);
+        editTextUserName = (EditText) findViewById(R.id.editTextUsername);
 
 
         final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
@@ -106,7 +100,7 @@ public class RegisterEmailActivity extends AppCompatActivity {
         };
 
 
-        textviewBirthdate.setOnClickListener(new View.OnClickListener() {
+        editTextBirthdate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
 
@@ -135,8 +129,6 @@ public class RegisterEmailActivity extends AppCompatActivity {
             }
         });
 
-        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-        String network = telephonyManager.getNetworkCountryIso();
 
         Retrofit retrofit2 = new Retrofit.Builder()
             .baseUrl("http://ip-api.com/")
@@ -150,6 +142,7 @@ public class RegisterEmailActivity extends AppCompatActivity {
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 String str = response.body().get("country").getAsString();
                 Toast.makeText(RegisterEmailActivity.this, str, Toast.LENGTH_LONG).show();
+                setCountry(str);
             }
 
             @Override
@@ -159,12 +152,16 @@ public class RegisterEmailActivity extends AppCompatActivity {
         });
     }
 
+    private void setCountry(String country) {
+        this.country = country;
+    }
+
     private void updateLabel() {
 
-        String myFormat = "dd/MM/yyyy"; //In which you need put here
+        String myFormat = "yyyy/MM/dd"; //In which you need put here
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
 
-        textviewBirthdate.setText(sdf.format(myCalendar.getTime()));
+        editTextBirthdate.setText(sdf.format(myCalendar.getTime()));
     }
 
 
@@ -175,6 +172,7 @@ public class RegisterEmailActivity extends AppCompatActivity {
         final String password = editTextPassword.getText().toString().trim();
         final String first_name = editTextFirstName.getText().toString().trim();
         final String last_name = editTextLastName.getText().toString().trim();
+        final String userName = editTextUserName.getText().toString().trim();
 
         //checking if email and passwords are empty
         if (TextUtils.isEmpty(email)) {
@@ -193,9 +191,13 @@ public class RegisterEmailActivity extends AppCompatActivity {
         progressDialog.setMessage("Registrando. Por favor espere...");
         progressDialog.show();
 
-        User user = new User(email, first_name, last_name, password);
-//        registerSS(user);
+//        User user = new User(email, first_name, last_name, password);
+        User user = new User(userName, country, editTextBirthdate.getText().toString() , email, first_name, last_name, password);
+        registerSS(user);
+    }
 
+    private void registerFirebase(final String email, final String password, final String first_name,
+        final String last_name) {
         //creating a new user
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -215,8 +217,9 @@ public class RegisterEmailActivity extends AppCompatActivity {
                                     if (task.isSuccessful()) {
                                         FirebaseUser userFirebase = firebaseAuth.getCurrentUser();
                                         if (userFirebase.getUid() != null) {
-                                            User user = new User(email, first_name, last_name, password);
-                                            registerSS(user);
+                                            startActivity(new Intent(getApplicationContext(), LoginEmailActivity.class));
+                                            finish();
+                                            Toast.makeText(RegisterEmailActivity.this, "Registro con exito", Toast.LENGTH_LONG).show();
                                         } else {
                                             Toast.makeText(RegisterEmailActivity.this, "Registration Error GUID", Toast.LENGTH_LONG).show();
                                         }
@@ -255,15 +258,11 @@ public class RegisterEmailActivity extends AppCompatActivity {
         call.enqueue(new Callback<User>() {
             @Override
             public void onResponse(final Call<User> callRegister, final Response<User> response) {
-                int statusCode = response.code();
-                if (statusCode == 201) {
-                    finish();
-                    startActivity(new Intent(getApplicationContext(), LoginEmailActivity.class));
-                    Toast.makeText(RegisterEmailActivity.this, "Registro con exito", Toast.LENGTH_LONG).show();
+                if (response.isSuccessful()) {
+                    registerFirebase(userRegister.getEmail(), userRegister.getPassword(), userRegister.getFirst_name(), userRegister.getLast_name());
                 } else {
                     Toast.makeText(RegisterEmailActivity.this, "Registration Error code != 200", Toast.LENGTH_LONG).show();
                 }
-                progressDialog.dismiss();
             }
 
             @Override
