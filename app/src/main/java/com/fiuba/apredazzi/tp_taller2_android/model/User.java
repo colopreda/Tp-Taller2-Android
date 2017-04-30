@@ -6,11 +6,26 @@ package com.fiuba.apredazzi.tp_taller2_android.model;
 
 public class User {
 
-    String id;
-    String email;
-    String firstName;
-    String lastName;
-    String password;
+    private String id;
+
+    private String userName;
+    private String country;
+    private String birthdate;
+    private String email;
+    private String firstName;
+    private String lastName;
+    private String password;
+
+    public User(final String userName, final String country, final String birthdate, final String email,
+        final String firstName, final String lastName, final String password) {
+        this.userName = userName;
+        this.country = country;
+        this.birthdate = birthdate;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.password = password;
+    }
 
     public User(String email, String firstName, String lastName, String password) {
         this.email = email;
@@ -19,8 +34,8 @@ public class User {
         this.password = password;
     }
 
-    public User(String email, String password){
-        this.email = email;
+    public User(String userName, String password){
+        this.userName = userName;
         this.password = password;
     }
 
@@ -68,6 +83,30 @@ public class User {
 
     public void setPassword(final String password) {
         this.password = password;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(final String userName) {
+        this.userName = userName;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(final String country) {
+        this.country = country;
+    }
+
+    public String getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(final String birthdate) {
+        this.birthdate = birthdate;
     }
 
 }

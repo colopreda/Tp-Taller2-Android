@@ -3,6 +3,7 @@ package com.fiuba.apredazzi.tp_taller2_android;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.facebook.login.LoginManager;
 import com.fiuba.apredazzi.tp_taller2_android.activities.ChatActivity;
@@ -25,6 +27,7 @@ import com.fiuba.apredazzi.tp_taller2_android.activities.ProfileActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.SongActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.SongsListActivity;
 import com.google.firebase.auth.FirebaseAuth;
+import com.squareup.picasso.Picasso;
 
 public class BaseActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -44,13 +47,41 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
             this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
+        drawer.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(final View drawerView, final float slideOffset) {
+                if (slideOffset >= 0.1) {
+                    SharedPreferences settings = PreferenceManager
+                        .getDefaultSharedPreferences(getApplicationContext());
+
+                    String full_name = settings.getString("full_name", "null");
+                    String email = settings.getString("email", "null");
+
+                    setNameAndEmail(full_name, email);
+                }
+            }
+
+            @Override
+            public void onDrawerOpened(final View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(final View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(final int newState) {
+
+            }
+        });
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         setNameEmailDrawer();
-
     }
 
     @Override
@@ -159,6 +190,12 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         TextView emailDrawer = (TextView) headerView.findViewById(R.id.email_drawer);
         nameDrawer.setText(saved_name);
         emailDrawer.setText(saved_email);
+
+        ImageView profilePic = (ImageView) headerView.findViewById(R.id.imageViewProfile);
+        String profileUrl = settings.getString("profile_url", null);
+        if (profileUrl != null) {
+            Picasso.with(BaseActivity.this).load(profileUrl).into(profilePic);
+        }
     }
 
     protected String getSavedName() {

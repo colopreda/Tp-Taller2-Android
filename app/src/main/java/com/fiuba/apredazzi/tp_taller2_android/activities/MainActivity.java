@@ -30,6 +30,7 @@ import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
 import com.fiuba.apredazzi.tp_taller2_android.api.UsersService;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -62,9 +63,16 @@ public class MainActivity extends BaseActivity {
             .getDefaultSharedPreferences(getApplicationContext());
         auth_token_string = settings.getString("auth_token", "null");
 
+//        String full_name = settings.getString("full_name", "null");
+//        String email = settings.getString("email", "null");
+//
+//        if (!"null".equals(full_name) && !"null".equals(email)) {
+//            setNameAndEmail(full_name, email);
+//        }
+
         if (auth_token_string != null) {
             userEmail.setText(auth_token_string);
-            getMe();
+//            getMe();
         } else {
             userEmail.setText("No hay token seteado");
         }
@@ -73,12 +81,12 @@ public class MainActivity extends BaseActivity {
 
     private void getMe() {
         UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
-        Call<User> getMe = usersService.getUserMe();
-        getMe.enqueue(new Callback<User>() {
+        Call<ServerResponse> getMe = usersService.getUserMe();
+        getMe.enqueue(new Callback<ServerResponse>() {
             @Override
-            public void onResponse(final Call<User> call, final Response<User> response) {
+            public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
                 if (response.isSuccessful()) {
-                    User me = response.body();
+                    User me = response.body().getUser();
                     SharedPreferences settingsId = PreferenceManager
                         .getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor editor = settingsId.edit();
@@ -93,7 +101,7 @@ public class MainActivity extends BaseActivity {
             }
 
             @Override
-            public void onFailure(final Call<User> call, final Throwable t) {
+            public void onFailure(final Call<ServerResponse> call, final Throwable t) {
                 Toast.makeText(MainActivity.this, "Falle ME", Toast.LENGTH_LONG).show();
             }
         });

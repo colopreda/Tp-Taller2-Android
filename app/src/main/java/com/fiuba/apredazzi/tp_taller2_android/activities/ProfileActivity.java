@@ -3,10 +3,13 @@ package com.fiuba.apredazzi.tp_taller2_android.activities;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +25,15 @@ import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
 import com.fiuba.apredazzi.tp_taller2_android.api.UsersService;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
+import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -29,12 +41,23 @@ import retrofit2.Response;
 
 public class ProfileActivity extends BaseActivity {
 
+    private static final int REQUEST_IMAGE = 1;
+    private static final String PROFILE_PICTURES = "profile_pictures";
+
     private ImageView editNameButton;
     private TextView editLocationTextView;
     private TextView nameTextView;
     private TextView emailTextView;
+    private CircleImageView userProfilePhoto;
 
     private String auth_token_string;
+
+    private ProgressDialog progressDialog;
+
+    // Create a storage reference from our app
+    FirebaseStorage storage = FirebaseStorage.getInstance();
+    StorageReference storageRef = storage.getReferenceFromUrl("gs://musicio-75fa2.appspot.com");
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,9 +91,83 @@ public class ProfileActivity extends BaseActivity {
             }
         });
 
+        userProfilePhoto = (CircleImageView) findViewById(R.id.user_profile_photo);
+        userProfilePhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("image/*");
+                startActivityForResult(intent, REQUEST_IMAGE);
+            }
+        });
+
+        progressDialog = new ProgressDialog(this);
+
         SharedPreferences settings = PreferenceManager
             .getDefaultSharedPreferences(getApplicationContext());
         auth_token_string = settings.getString("auth_token", "null");
+
+        String profileUrl = settings.getString("profile_url", null);
+        if (profileUrl != null) {
+            Picasso.with(ProfileActivity.this).load(profileUrl).into(userProfilePhoto);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE) {
+            if (resultCode == RESULT_OK) {
+
+                SharedPreferences settings = PreferenceManager
+                    .getDefaultSharedPreferences(getApplicationContext());
+                final String myId = settings.getString("myId", "null");
+
+                if (data != null && !"null".equals(myId)) {
+                    final Uri uri = data.getData();
+
+                    StorageReference riversRef = storageRef.child(PROFILE_PICTURES).child(myId);
+                    UploadTask uploadTask = riversRef.putFile(uri);
+
+                    progressDialog.setMessage("Actualizando foto de perfil");
+                    progressDialog.show();
+
+                // Register observers to listen for when the download is done or if it fails
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            progressDialog.dismiss();
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(final UploadTask.TaskSnapshot taskSnapshot) {
+                            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                            @SuppressWarnings("VisibleForTests") Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                            Toast.makeText(ProfileActivity.this, downloadUrl.toString(), Toast.LENGTH_LONG).show();
+                            Picasso.with(ProfileActivity.this).load(downloadUrl.toString()).into(userProfilePhoto, new com.squareup.picasso.Callback() {
+
+                                @Override
+                                public void onSuccess() {
+                                    progressDialog.dismiss();
+                                    SharedPreferences settings = PreferenceManager
+                                        .getDefaultSharedPreferences(getApplicationContext());
+                                    SharedPreferences.Editor editor = settings.edit();
+                                    @SuppressWarnings("VisibleForTests") String profile_url = taskSnapshot.getDownloadUrl().toString();
+                                    editor.putString("profile_url", profile_url);
+                                    editor.commit();
+                                }
+
+                                @Override
+                                public void onError() {
+                                    progressDialog.dismiss();
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        }
     }
 
     public void nameEmailDialg() {

@@ -23,9 +23,12 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.api.LoginService;
+import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
+import com.fiuba.apredazzi.tp_taller2_android.api.UsersService;
 import com.fiuba.apredazzi.tp_taller2_android.model.FBUser;
 import com.fiuba.apredazzi.tp_taller2_android.model.Token;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -189,12 +192,12 @@ public class LoginEmailActivity extends AppCompatActivity {
 
     //method for user login
     private void userLogin() {
-        final String email = editTextEmail.getText().toString().trim();
+        final String user = editTextEmail.getText().toString().trim();
         final String password = editTextPassword.getText().toString().trim();
 
-        //checking if email and passwords are empty
-        if (TextUtils.isEmpty(email)) {
-            Toast.makeText(this, "Por favor, ingrese su email", Toast.LENGTH_LONG).show();
+        //checking if user and passwords are empty
+        if (TextUtils.isEmpty(user)) {
+            Toast.makeText(this, "Por favor, ingrese su usuario", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -203,14 +206,18 @@ public class LoginEmailActivity extends AppCompatActivity {
             return;
         }
 
-        //if the email and password are not empty
+        //if the user and password are not empty
         //displaying a progress dialog
 
         progressDialog.setMessage("Iniciando sesion, por favor espere...");
         progressDialog.show();
+        loginSharedServer(user, password);
+//        loginFirebaseUser(user, password);
+    }
 
+    private void loginFirebaseUser(final String user, final String password) {
         //logging in the user
-        firebaseAuth.signInWithEmailAndPassword(email, password)
+        firebaseAuth.signInWithEmailAndPassword(user, password)
             .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
@@ -218,7 +225,7 @@ public class LoginEmailActivity extends AppCompatActivity {
                     //if the task is successfull
                     if (task.isSuccessful()) {
                         //start the profile activity
-                        loginSharedServer(email, password);
+                        goToMainActivity();
                     }
                 }
             });
@@ -229,7 +236,7 @@ public class LoginEmailActivity extends AppCompatActivity {
         startActivity(i);
     }
 
-    private void loginSharedServer(String email, String password) {
+    private void loginSharedServer(final String user, final String password) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         // set your desired log level
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -246,12 +253,11 @@ public class LoginEmailActivity extends AppCompatActivity {
 
         LoginService loginService = retrofit.create(LoginService.class);
 
-        User user = new User(email, password);
-        Call<Token> call = loginService.generateToken(user);
+        User userClass = new User(user, password);
+        Call<Token> call = loginService.generateToken(userClass);
         call.enqueue(new Callback<Token>() {
             @Override
             public void onResponse(final Call<Token> call, final Response<Token> response) {
-                progressDialog.hide();
                 Toast.makeText(LoginEmailActivity.this, "Logueo con exito", Toast.LENGTH_LONG).show();
                 if (response.code() != 404) {
                     SharedPreferences settings = PreferenceManager
@@ -259,7 +265,8 @@ public class LoginEmailActivity extends AppCompatActivity {
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("auth_token", response.body().getToken());
                     editor.commit();
-                    goToMainActivity();
+                    getMe(response.body().getToken(), password);
+//                    loginFirebaseUser(userClass, password);
                 }
             }
 
@@ -270,4 +277,36 @@ public class LoginEmailActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void getMe(String auth_token_string, final String password) {
+        UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+        Call<ServerResponse> getMe = usersService.getUserMe();
+        getMe.enqueue(new Callback<ServerResponse>() {
+            @Override
+            public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                if (response.isSuccessful()) {
+                    User me = response.body().getUser();
+                    SharedPreferences settingsId = PreferenceManager
+                        .getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = settingsId.edit();
+                    editor.putString("myId", me.getId());
+                    String full_name = me.getFirst_name() + " " + me.getLast_name();
+                    editor.putString("full_name", full_name);
+                    editor.putString("email", me.getEmail());
+                    editor.commit();
+                    loginFirebaseUser(me.getEmail(), password);
+                    Toast.makeText(LoginEmailActivity.this, "Nombre e email OK", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(LoginEmailActivity.this, "Falle onResponse ME: " + response.errorBody(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+                Toast.makeText(LoginEmailActivity.this, "Falle ME", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+
 }
