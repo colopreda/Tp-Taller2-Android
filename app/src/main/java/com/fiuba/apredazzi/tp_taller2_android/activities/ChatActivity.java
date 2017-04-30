@@ -251,7 +251,8 @@ public class ChatActivity extends BaseActivity implements
                     new FriendlyMessage(mMessageEditText.getText().toString(), mUsername,
                         mPhotoUrl, null, senderId, receiverID, System.currentTimeMillis());
 //                mFirebaseDatabaseReference.child(MESSAGES_CHILD).push().setValue(friendlyMessage);
-                mFirebaseDatabaseReference.getRef().addListenerForSingleValueEvent(new ValueEventListener() {
+                mFirebaseDatabaseReference.child(MESSAGE_ROOMS)
+                    .getRef().addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(final DataSnapshot dataSnapshot) {
                         if (dataSnapshot.hasChild(room_type_1)) {

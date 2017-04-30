@@ -12,16 +12,22 @@ public class User {
     String lastName;
     String password;
 
-    public User(String email, String first_name, String last_name, String password) {
+    public User(String email, String firstName, String lastName, String password) {
         this.email = email;
-        this.firstName = first_name;
-        this.lastName = last_name;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.password = password;
     }
 
     public User(String email, String password){
         this.email = email;
         this.password = password;
+    }
+
+    public User(String email, String firstName, String lastName) {
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -44,16 +50,16 @@ public class User {
         return firstName;
     }
 
-    public void setFirst_name(final String first_name) {
-        this.firstName = first_name;
+    public void setFirst_name(final String firstName) {
+        this.firstName = firstName;
     }
 
     public String getLast_name() {
         return lastName;
     }
 
-    public void setLast_name(final String last_name) {
-        this.lastName = last_name;
+    public void setLast_name(final String lastName) {
+        this.lastName = lastName;
     }
 
     public String getPassword() {
