@@ -1,5 +1,6 @@
 package com.fiuba.apredazzi.tp_taller2_android.utils;
 
+import com.fiuba.apredazzi.tp_taller2_android.model.Album;
 import com.fiuba.apredazzi.tp_taller2_android.model.Artist;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import com.google.gson.annotations.SerializedName;
@@ -19,6 +20,9 @@ public class ServerResponse {
 
     @SerializedName("artists")
     private List<Artist> artists;
+
+    @SerializedName("albums")
+    private List<Album> albums;
 
     public User getUser() {
         return user;
@@ -42,5 +46,13 @@ public class ServerResponse {
 
     public void setArtists(final List<Artist> artists) {
         this.artists = artists;
+    }
+
+    public List<Album> getAlbums() {
+        return albums;
+    }
+
+    public void setAlbums(final List<Album> albums) {
+        this.albums = albums;
     }
 }

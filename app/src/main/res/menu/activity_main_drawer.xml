@@ -11,6 +11,10 @@
             android:icon="@drawable/ic_menu_slideshow"
             android:title="Canciones"/>
         <item
+            android:id="@+id/nav_albums"
+            android:icon="@drawable/ic_audiotrack"
+            android:title="Álbumes"/>
+        <item
             android:id="@+id/nav_playing"
             android:icon="@drawable/ic_play_circle_outline_black_24dp"
             android:title="Sonando Ahora"/>

@@ -19,6 +19,7 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.facebook.login.LoginManager;
+import com.fiuba.apredazzi.tp_taller2_android.activities.AlbumsActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.ChatActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.ContactsActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.LoginEmailActivity;
@@ -128,6 +129,9 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_canciones) {
             Intent i = new Intent(this, SongsListActivity.class);
             startActivity(i);
+        } else if (id == R.id.nav_albums) {
+            Intent i = new Intent(this, AlbumsActivity.class);
+            startActivity(i);
         } else if (id == R.id.nav_playing) {
             Intent i = new Intent(this, SongActivity.class);
             startActivity(i);
@@ -208,5 +212,10 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         SharedPreferences settings = PreferenceManager
             .getDefaultSharedPreferences(getApplicationContext());
         return settings.getString("email_user", "null");
+    }
+
+    protected void setTitleTooblar(String titleTooblar) {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(titleTooblar);
     }
 }

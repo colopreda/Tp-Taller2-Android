@@ -26,21 +26,21 @@ public interface ArtistService {
     Call<ServerResponse> getArtists();
 
     @GET("artists/{id}")
-    Call<Artist> getArtist(@Path("id") String id);
+    Call<Artist> getArtist(@Path("id") int id);
 
     @GET("artists/{id}/tracks")
-    Call<List<Song>> getSongsFromArtist(@Path("id") String id);
+    Call<List<Song>> getSongsFromArtist(@Path("id") int id);
 
     @PUT("artists/{id}")
-    Call<Artist> updateArtist(@Path("id") String id);
+    Call<Artist> updateArtist(@Path("id") int id, @Body Artist Artist);
 
     @DELETE("artists/{id}")
-    Call<ResponseBody> deleteArtist(@Path("id") String id);
+    Call<ResponseBody> deleteArtist(@Path("id") int id);
 
     @DELETE("artists/{id}/follow")
-    Call<ResponseBody> unfollowArtist(@Path("id") String id);
+    Call<ResponseBody> unfollowArtist(@Path("id") int id);
 
     @POST("artists/{id}/follow")
-    Call<ResponseBody> followArtist(@Path("id") String id);
+    Call<ResponseBody> followArtist(@Path("id") int id, @Body boolean follow);
 
 }
