@@ -1,12 +1,15 @@
 package com.fiuba.apredazzi.tp_taller2_android.activities;
 
 import android.app.Activity;
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 
 import androgeek.material.library.MaterialMusicPlayerView;
+import android.widget.FrameLayout;
 import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 import java.io.IOException;
@@ -19,7 +22,13 @@ public class SongActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_song);
+
+        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        //inflate your activity layout here!
+        View contentView = inflater.inflate(R.layout.activity_song, null, false);
+        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.content_frame);
+        frameLayout.addView(contentView);
 
 //        mediaPlayer = MediaPlayer.create(this, R.raw.soy);
         mediaPlayer = new MediaPlayer();
