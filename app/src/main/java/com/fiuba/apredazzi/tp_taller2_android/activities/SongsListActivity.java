@@ -1,6 +1,7 @@
 package com.fiuba.apredazzi.tp_taller2_android.activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import com.fiuba.apredazzi.tp_taller2_android.api.SongsService;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
 import com.fiuba.apredazzi.tp_taller2_android.interfaces.RecyclerViewClickListener;
 import com.fiuba.apredazzi.tp_taller2_android.model.Song;
+import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -50,6 +52,11 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
 
         // loadAdapterWithMock();
 
+        if (getIntent().getExtras() != null) {
+            String id = getIntent().getExtras().getString("id");
+            boolean album = getIntent().getExtras().getBoolean("album");
+        }
+
         loadAdapterFromServer();
 
     }
@@ -71,18 +78,18 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
 
         if (!"null".equals(auth_token_string)) {
             SongsService songsService = TokenGenerator.createService(SongsService.class, auth_token_string);
-            Call<List<Song>> allSongs = songsService.getSongs();
-            allSongs.enqueue(new Callback<List<Song>>() {
+            Call<ServerResponse> allSongs = songsService.getSongs();
+            allSongs.enqueue(new Callback<ServerResponse>() {
                 @Override
-                public void onResponse(final Call<List<Song>> call, final Response<List<Song>> response) {
+                public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
                     if (response.isSuccessful()) {
-                        songsList = response.body();
+                        songsList = response.body().getSongs();
                         loadAdapter();
                     }
                 }
 
                 @Override
-                public void onFailure(final Call<List<Song>> call, final Throwable t) {
+                public void onFailure(final Call<ServerResponse> call, final Throwable t) {
 
                 }
             });

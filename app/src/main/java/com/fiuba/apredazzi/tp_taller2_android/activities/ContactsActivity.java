@@ -25,6 +25,7 @@ import com.fiuba.apredazzi.tp_taller2_android.api.UsersService;
 import com.fiuba.apredazzi.tp_taller2_android.interfaces.RecyclerViewClickListener;
 import com.fiuba.apredazzi.tp_taller2_android.model.Song;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -64,12 +65,12 @@ public class ContactsActivity extends BaseActivity implements RecyclerViewClickL
 
         if (auth_token_string != null) {
             UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
-            Call<List<User>> listUsuarios = usersService.getAllUsers();
-            listUsuarios.enqueue(new Callback<List<User>>() {
+            Call<ServerResponse> listUsuarios = usersService.getAllUsers();
+            listUsuarios.enqueue(new Callback<ServerResponse>() {
                 @Override
-                public void onResponse(final Call<List<User>> call, final Response<List<User>> response) {
+                public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
                     if (response.isSuccessful()) {
-                        contactsList = response.body();
+                        contactsList = response.body().getUsers();
                         setAdapter();
                         Toast.makeText(ContactsActivity.this, "Recibi usuarios", Toast.LENGTH_LONG).show();
                     } else {
@@ -79,7 +80,7 @@ public class ContactsActivity extends BaseActivity implements RecyclerViewClickL
                 }
 
                 @Override
-                public void onFailure(final Call<List<User>> call, final Throwable t) {
+                public void onFailure(final Call<ServerResponse> call, final Throwable t) {
                     Toast.makeText(ContactsActivity.this, "Falle", Toast.LENGTH_LONG).show();
                 }
             });

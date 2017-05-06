@@ -2,6 +2,7 @@ package com.fiuba.apredazzi.tp_taller2_android.api;
 
 import com.fiuba.apredazzi.tp_taller2_android.model.Song;
 import com.fiuba.apredazzi.tp_taller2_android.model.UserSong;
+import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import java.util.List;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -22,24 +23,24 @@ public interface SongsService {
     Call<ResponseBody> addSong(@Body Song song);
 
     @GET("tracks")
-    Call<List<Song>> getSongs();
+    Call<ServerResponse> getSongs();
 
     @GET("tracks/{id}")
-    Call<Song> getSong(@Path("id") String id);
+    Call<Song> getSong(@Path("id") int id);
 
     @PUT("tracks/{id}")
-    Call<Song> updateSong(@Path("id") String id);
+    Call<Song> updateSong(@Path("id") int id);
 
     @DELETE("tracks/{id}")
-    Call<ResponseBody> deleteSong(@Path("id") String id);
+    Call<ResponseBody> deleteSong(@Path("id") int id);
 
     @POST("tracks/{id}/popularity")
-    Call<ResponseBody> rankSong(@Path("id") String id, @Body UserSong userSong);
+    Call<ResponseBody> rankSong(@Path("id") int id, @Body UserSong userSong);
 
     @POST("tracks/{id}/like")
-    Call<ResponseBody> likeSong(@Path("id") String id, @Body UserSong userSong);
+    Call<ResponseBody> likeSong(@Path("id") int id, @Body UserSong userSong);
 
     @DELETE("tracks/{id}/like")
-    Call<ResponseBody> unlikeSong(@Path("id") String id);
+    Call<ResponseBody> unlikeSong(@Path("id") int id);
 
 }

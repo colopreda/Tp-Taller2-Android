@@ -25,7 +25,7 @@ public interface UsersService {
     Call<ResponseBody> modifyUserMe(@Body User user);
 
     @GET("users")
-    Call<List<User>> getAllUsers();
+    Call<ServerResponse> getAllUsers();
 
 
 }
