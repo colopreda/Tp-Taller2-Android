@@ -1,13 +1,16 @@
 package com.fiuba.apredazzi.tp_taller2_android.activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.GridView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
 import com.fiuba.apredazzi.tp_taller2_android.R;
@@ -34,6 +37,8 @@ public class AlbumsActivity extends BaseActivity {
 
     String auth_token_string;
 
+    private ProgressBar progressBar;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +50,14 @@ public class AlbumsActivity extends BaseActivity {
         frameLayout.addView(contentView);
 
         gridView = (GridView) findViewById(R.id.gridView);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
+                startActivity(parent, position);
+            }
+        });
+
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
         SharedPreferences settings = PreferenceManager
             .getDefaultSharedPreferences(getApplicationContext());
@@ -52,8 +65,14 @@ public class AlbumsActivity extends BaseActivity {
 
         setTitleTooblar("Álbumes");
 
-//        getAlbumsFromServer();
-        setAdapter();
+        getAlbumsFromServer();
+    }
+
+    private void startActivity(final AdapterView<?> parent, final int position) {
+        Intent intent = new Intent(AlbumsActivity.this, SongsListActivity.class);
+        intent.putExtra("type", "albums");
+        intent.putExtra("id", parent.getItemIdAtPosition(position));
+        startActivity(intent);
     }
 
     private void getAlbumsFromServer() {
@@ -64,25 +83,28 @@ public class AlbumsActivity extends BaseActivity {
             public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
                 if (response.isSuccessful()) {
                     albumList = response.body().getAlbums();
+                    progressBar.setVisibility(View.GONE);
                     setAdapter();
                 } else {
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(AlbumsActivity.this, "Recibi != 200 - albumes", Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+                progressBar.setVisibility(View.GONE);
                 Toast.makeText(AlbumsActivity.this, "onFailure albums", Toast.LENGTH_LONG).show();
             }
         });
     }
 
     private void setAdapter() {
-        albumList = new ArrayList<>();
-        albumList.add(new Album(1, "Album1", null, null, null, null));
-        albumList.add(new Album(2, "Album2", null, null, null, null));
-        albumList.add(new Album(3, "Album3", null, null, null, null));
-        albumList.add(new Album(4, "Album4", null, null, null, null));
+//        albumList = new ArrayList<>();
+//        albumList.add(new Album(1, "Album1", null, null, null, null));
+//        albumList.add(new Album(2, "Album2", null, null, null, null));
+//        albumList.add(new Album(3, "Album3", null, null, null, null));
+//        albumList.add(new Album(4, "Album4", null, null, null, null));
         gridView.setAdapter(new AlbumsGridViewAdapter(AlbumsActivity.this, albumList));
     }
 }

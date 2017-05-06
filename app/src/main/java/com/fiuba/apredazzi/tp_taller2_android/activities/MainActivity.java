@@ -19,9 +19,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.GridView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.FacebookSdk;
@@ -52,6 +54,8 @@ public class MainActivity extends BaseActivity {
 
     String auth_token_string;
 
+    private ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +82,7 @@ public class MainActivity extends BaseActivity {
                 if (response.isSuccessful()) {
                     artistList = response.body().getArtists();
                     setAdapter();
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, "Recibi artistas", Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(MainActivity.this, "Falle onResponse: " + response.errorBody(),
@@ -95,6 +100,7 @@ public class MainActivity extends BaseActivity {
         userEmail = (TextView) findViewById(R.id.user_email);
         nameDrawer = (TextView) findViewById(R.id.name_drawer);
         emailDrawer = (TextView) findViewById(R.id.email_drawer);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
 //        String full_name = settings.getString("full_name", "null");
 //        String email = settings.getString("email", "null");
@@ -114,6 +120,15 @@ public class MainActivity extends BaseActivity {
 
     private void setAdapter() {
         gridView.setAdapter(new ArtistsGridViewAdapter(this, artistList));
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
+                Intent intent = new Intent(MainActivity.this, SongsListActivity.class);
+                intent.putExtra("type", "albums");
+                intent.putExtra("id", parent.getItemIdAtPosition(position));
+                startActivity(intent);
+            }
+        });
     }
 
     private void getMe() {

@@ -177,6 +177,11 @@ public class LoginEmailActivity extends AppCompatActivity {
                         .getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("auth_token", response.body().getToken());
+                    editor.putString("full_name", firebaseAuth.getCurrentUser().getDisplayName());
+                    editor.putString("email", firebaseAuth.getCurrentUser().getEmail());
+                    if (firebaseAuth.getCurrentUser().getPhotoUrl() != null) {
+                        editor.putString("profile_url", firebaseAuth.getCurrentUser().getPhotoUrl().toString());
+                    }
                     editor.commit();
                     goToMainActivity();
                 }
@@ -293,6 +298,13 @@ public class LoginEmailActivity extends AppCompatActivity {
                     String full_name = me.getFirst_name() + " " + me.getLast_name();
                     editor.putString("full_name", full_name);
                     editor.putString("email", me.getEmail());
+                    editor.putString("country", me.getCountry());
+                    editor.putString("birthday", me.getBirthdate());
+                    if (me.getImages() != null) {
+                        editor.putString("profile_url", me.getImages().get(0));
+                    } else {
+                        editor.putString("profile_url", null);
+                    }
                     editor.commit();
                     loginFirebaseUser(me.getEmail(), password);
                     Toast.makeText(LoginEmailActivity.this, "Nombre e email OK", Toast.LENGTH_LONG).show();
@@ -308,5 +320,38 @@ public class LoginEmailActivity extends AppCompatActivity {
         });
     }
 
+    private void getMe(String auth_token_string) {
+        UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+        Call<ServerResponse> getMe = usersService.getUserMe();
+        getMe.enqueue(new Callback<ServerResponse>() {
+            @Override
+            public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                if (response.isSuccessful()) {
+                    User me = response.body().getUser();
+                    SharedPreferences settingsId = PreferenceManager
+                        .getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = settingsId.edit();
+                    editor.putString("myId", me.getId());
+                    String full_name = me.getFirst_name() + " " + me.getLast_name();
+                    editor.putString("full_name", full_name);
+                    editor.putString("email", me.getEmail());
+                    editor.putString("country", me.getCountry());
+                    editor.putString("birthday", me.getBirthdate());
+                    if (me.getImages() != null) {
+                        editor.putString("profile_url", me.getImages().get(0));
+                    }
+                    editor.commit();
+                    Toast.makeText(LoginEmailActivity.this, "Nombre e email OK", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(LoginEmailActivity.this, "Falle onResponse ME: " + response.errorBody(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+                Toast.makeText(LoginEmailActivity.this, "Falle ME", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
 
 }

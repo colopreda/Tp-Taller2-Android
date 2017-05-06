@@ -1,5 +1,7 @@
 package com.fiuba.apredazzi.tp_taller2_android.model;
 
+import java.util.List;
+
 /**
  * Created by apredazzi on 4/2/17.
  */
@@ -15,6 +17,10 @@ public class User {
     private String firstName;
     private String lastName;
     private String password;
+    private List<String> images;
+
+    public User() {
+    }
 
     public User(final String userName, final String country, final String birthdate, final String email,
         final String firstName, final String lastName, final String password) {
@@ -109,4 +115,11 @@ public class User {
         this.birthdate = birthdate;
     }
 
+    public List<String> getImages() {
+        return images;
+    }
+
+    public void setImages(final List<String> images) {
+        this.images = images;
+    }
 }

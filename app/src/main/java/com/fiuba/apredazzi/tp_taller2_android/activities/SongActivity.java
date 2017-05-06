@@ -43,7 +43,7 @@ public class SongActivity extends BaseActivity {
         });
 
         try {
-            mediaPlayer.setDataSource("http://slider.kz/download/167/cs8-3v4.vk-cdn.net/p10/ae6c2eeac0573d/Ed%20Sheeran%20-%20Galway%20Girl.mp3");
+            mediaPlayer.setDataSource("http://slider.kz/download/170/cs8-2v4.vk-cdn.net/p17/61879d1f54447a/Galway%20-%20Galway%20Girl.mp3");
             mediaPlayer.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();

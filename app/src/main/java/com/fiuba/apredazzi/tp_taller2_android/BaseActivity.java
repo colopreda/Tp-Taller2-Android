@@ -214,6 +214,18 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
         return settings.getString("email_user", "null");
     }
 
+    protected String getSavedCountry() {
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        return settings.getString("country", "null");
+    }
+
+    protected String getSavedBirthday() {
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        return settings.getString("birthday", "null");
+    }
+
     protected void setTitleTooblar(String titleTooblar) {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(titleTooblar);
