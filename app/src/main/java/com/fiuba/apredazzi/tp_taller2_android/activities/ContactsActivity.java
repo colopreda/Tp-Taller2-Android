@@ -151,7 +151,7 @@ public class ContactsActivity extends BaseActivity implements RecyclerViewClickL
             addContact(user.getId());
         } else {
             Intent intent = new Intent(this, ChatActivity.class);
-            intent.putExtra("id_receiver", user.getId());
+            intent.putExtra("id_receiver", user.getFriendId());
             startActivity(intent);
         }
     }
