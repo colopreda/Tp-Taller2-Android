@@ -14,13 +14,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/thumbnail_row"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="0dp"
             android:layout_gravity="center"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_person"/>
+            android:src="@drawable/ic_account_circle_black_36dp"/>
 
         <TextView
             android:id="@+id/title_row"

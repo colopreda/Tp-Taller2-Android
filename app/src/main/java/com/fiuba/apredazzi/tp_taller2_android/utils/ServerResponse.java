@@ -19,6 +19,9 @@ public class ServerResponse {
     @SerializedName("users")
     private List<User> users;
 
+    @SerializedName("contacts")
+    private List<User> contacts;
+
     @SerializedName("artists")
     private List<Artist> artists;
 
@@ -66,5 +69,13 @@ public class ServerResponse {
 
     public void setSongs(final List<Song> songs) {
         this.songs = songs;
+    }
+
+    public List<User> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(final List<User> contacts) {
+        this.contacts = contacts;
     }
 }

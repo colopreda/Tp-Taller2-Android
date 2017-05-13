@@ -1,5 +1,6 @@
 package com.fiuba.apredazzi.tp_taller2_android.api;
 
+import com.fiuba.apredazzi.tp_taller2_android.model.FriendId;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import java.util.List;
@@ -26,6 +27,12 @@ public interface UsersService {
 
     @GET("users")
     Call<ServerResponse> getAllUsers();
+
+    @GET("users/me/contacts")
+    Call<ServerResponse> getAllContacts();
+
+    @POST("users/me/contacts")
+    Call<ResponseBody> addContact(@Body FriendId friendId);
 
 
 }

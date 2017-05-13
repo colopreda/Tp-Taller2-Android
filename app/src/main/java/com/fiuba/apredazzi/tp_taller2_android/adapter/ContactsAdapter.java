@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.interfaces.RecyclerViewClickListener;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import com.squareup.picasso.Picasso;
 import java.util.List;
 
 /**
@@ -41,6 +42,9 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.Custom
         User feedItem = feedItemList.get(position);
 
         holder.textViewTitle.setText(feedItem.getEmail());
+        if (feedItem.getImages() != null && !feedItem.getImages().isEmpty()) {
+            Picasso.with(mContext).load(feedItem.getImages().get(0)).into(holder.imageView);
+        }
     }
 
     @Override
