@@ -323,36 +323,8 @@ public class ChatActivity extends BaseActivity implements
                 if (friendlyMessage.getText() != null) {
                     viewHolder.messageTextView.setText(friendlyMessage.getText());
                     viewHolder.messageTextView.setVisibility(TextView.VISIBLE);
-//                } else {
-//                    String imageUrl = friendlyMessage.getImageUrl();
-//                    if (imageUrl.startsWith("gs://")) {
-//                        StorageReference storageReference = FirebaseStorage.getInstance()
-//                            .getReferenceFromUrl(imageUrl);
-//                        storageReference.getDownloadUrl().addOnCompleteListener(
-//                            new OnCompleteListener<Uri>() {
-//                                @Override
-//                                public void onComplete(@NonNull Task<Uri> task) {
-//                                    if (task.isSuccessful()) {
-//                                        String downloadUrl = task.getResult().toString();
-//                                        Glide.with(viewHolder.messageImageView.getContext())
-//                                            .load(downloadUrl)
-//                                            .into(viewHolder.messageImageView);
-//                                    } else {
-//                                        Log.w(TAG, "Getting download url was not successful.",
-//                                            task.getException());
-//                                    }
-//                                }
-//                            });
-//                    } else {
-//                        Glide.with(viewHolder.messageImageView.getContext())
-//                            .load(friendlyMessage.getImageUrl())
-//                            .into(viewHolder.messageImageView);
-//                    }
-////                    viewHolder.messageImageView.setVisibility(ImageView.VISIBLE);
-//                    viewHolder.messageTextView.setVisibility(TextView.GONE);
                 }
 
-//                viewHolder.messengerTextView.setText(friendlyMessage.getName());
                 if (friendlyMessage.getPhotoUrl() == null) {
                     viewHolder.messengerImageView.setImageDrawable(ContextCompat.getDrawable(ChatActivity.this,
                         R.drawable.ic_account_circle_black_36dp));
