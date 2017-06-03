@@ -10,6 +10,8 @@ public class User {
 
     private String id;
 
+    private String friend_id;
+
     private String userName;
     private String country;
     private String birthdate;
@@ -121,5 +123,13 @@ public class User {
 
     public void setImages(final List<String> images) {
         this.images = images;
+    }
+
+    public String getFriendId() {
+        return friend_id;
+    }
+
+    public void setFriendId(final String friendId) {
+        this.friend_id = friendId;
     }
 }

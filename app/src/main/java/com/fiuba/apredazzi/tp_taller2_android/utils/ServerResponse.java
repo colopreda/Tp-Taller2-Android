@@ -19,11 +19,17 @@ public class ServerResponse {
     @SerializedName("users")
     private List<User> users;
 
+    @SerializedName("contacts")
+    private List<User> contacts;
+
     @SerializedName("artists")
     private List<Artist> artists;
 
     @SerializedName("albums")
     private List<Album> albums;
+
+    @SerializedName("album")
+    private Album album;
 
     @SerializedName("tracks")
     private List<Song> songs;
@@ -60,11 +66,27 @@ public class ServerResponse {
         this.albums = albums;
     }
 
+    public Album getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(final Album album) {
+        this.album = album;
+    }
+
     public List<Song> getSongs() {
         return songs;
     }
 
     public void setSongs(final List<Song> songs) {
         this.songs = songs;
+    }
+
+    public List<User> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(final List<User> contacts) {
+        this.contacts = contacts;
     }
 }

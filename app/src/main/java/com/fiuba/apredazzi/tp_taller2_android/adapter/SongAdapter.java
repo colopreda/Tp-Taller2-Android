@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.interfaces.RecyclerViewClickListener;
+import com.fiuba.apredazzi.tp_taller2_android.model.Artist;
 import com.fiuba.apredazzi.tp_taller2_android.model.Song;
 import java.util.List;
 
@@ -51,7 +52,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.CustomViewHold
 
         //Setting text view title
         customViewHolder.textViewTitle.setText(feedItem.getTitle());
-        customViewHolder.textViewSubtitle.setText(feedItem.getArtist());
+        String artistsStr = "";
+        if (feedItem.getArtist() != null) {
+            for (Artist artist : feedItem.getArtist()) {
+                artistsStr += artist.getName() + " ";
+            }
+        }
+        customViewHolder.textViewSubtitle.setText(artistsStr);
     }
 
     @Override

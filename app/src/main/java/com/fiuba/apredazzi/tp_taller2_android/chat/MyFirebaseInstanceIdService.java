@@ -15,6 +15,8 @@
  */
 package com.fiuba.apredazzi.tp_taller2_android.chat;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -38,5 +40,11 @@ public class MyFirebaseInstanceIdService extends FirebaseInstanceIdService {
 
         // Once a token is generated, we subscribe to topic.
         FirebaseMessaging.getInstance().subscribeToTopic(FRIENDLY_ENGAGE_TOPIC);
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        String myId = settings.getString("myId", null);
+        if (myId != null) {
+            FirebaseMessaging.getInstance().subscribeToTopic("user_" + myId);
+        }
     }
 }
