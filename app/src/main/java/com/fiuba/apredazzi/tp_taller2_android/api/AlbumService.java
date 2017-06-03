@@ -25,7 +25,7 @@ public interface AlbumService {
     Call<ServerResponse> getAlbums();
 
     @GET("albums/{id}")
-    Call<Album> getAlbum(@Path("id") int id);
+    Call<ServerResponse> getAlbum(@Path("id") int id);
 
     @PUT("albums/{id}")
     Call<Album> updateAlbum(@Path("id") int id, @Body Album album);

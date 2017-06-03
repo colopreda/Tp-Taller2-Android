@@ -43,8 +43,11 @@ import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
 import com.fiuba.apredazzi.tp_taller2_android.R;
+import com.fiuba.apredazzi.tp_taller2_android.api.NotificationService;
 import com.fiuba.apredazzi.tp_taller2_android.chat.CodelabPreferences;
 import com.fiuba.apredazzi.tp_taller2_android.chat.FriendlyMessage;
+import com.fiuba.apredazzi.tp_taller2_android.model.Notification;
+import com.fiuba.apredazzi.tp_taller2_android.model.NotificationRequest;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.appinvite.AppInviteInvitation;
@@ -78,6 +81,14 @@ import com.google.firebase.storage.UploadTask;
 import de.hdodenhof.circleimageview.CircleImageView;
 import java.util.HashMap;
 import java.util.Map;
+import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ChatActivity extends BaseActivity implements
     GoogleApiClient.OnConnectionFailedListener {
@@ -265,6 +276,9 @@ public class ChatActivity extends BaseActivity implements
                                 .child(String.valueOf(friendlyMessage.getTimestamp()))
                                 .setValue(friendlyMessage);
                         }
+
+                        sendNotificationToUser(receiverID, friendlyMessage.getText());
+
                     }
 
                     @Override
@@ -551,5 +565,44 @@ public class ChatActivity extends BaseActivity implements
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
+    }
+
+    private void sendNotificationToUser(String id, String message) {
+
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+        httpClient.addInterceptor(logging);  // <-- this is the important line!
+
+        Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(NotificationService.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(httpClient.build())
+            .build();
+
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(getApplicationContext());
+        final String senderId = settings.getString("myId", "null");
+
+        Notification notification = new Notification(senderId, message);
+        NotificationRequest notificationRequest = new NotificationRequest(notification, "/topics/user_" + id);
+
+        NotificationService notificationService = retrofit.create(NotificationService.class);
+        Call<ResponseBody> notif = notificationService.sendNotification(notificationRequest);
+        notif.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(final Call<ResponseBody> call, final Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(ChatActivity.this, "Notificacion enviada con exito", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ChatActivity.this, "Notificacion fallida != 200", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<ResponseBody> call, final Throwable t) {
+                Toast.makeText(ChatActivity.this, "Notificacion failure", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

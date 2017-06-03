@@ -16,9 +16,11 @@ import android.widget.Toast;
 import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.adapter.SongAdapter;
+import com.fiuba.apredazzi.tp_taller2_android.api.AlbumService;
 import com.fiuba.apredazzi.tp_taller2_android.api.SongsService;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
 import com.fiuba.apredazzi.tp_taller2_android.interfaces.RecyclerViewClickListener;
+import com.fiuba.apredazzi.tp_taller2_android.model.Artist;
 import com.fiuba.apredazzi.tp_taller2_android.model.Song;
 import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import java.util.ArrayList;
@@ -44,6 +46,8 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
         FrameLayout frameLayout = (FrameLayout) findViewById(R.id.content_frame);
         frameLayout.addView(contentView);
 
+        setTitle("Canciones");
+
         songsList = new ArrayList<>();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -52,47 +56,67 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
 
         // loadAdapterWithMock();
 
+        String id = "";
         if (getIntent().getExtras() != null) {
-            String id = getIntent().getExtras().getString("id");
+            id = getIntent().getExtras().getString("id");
             boolean album = getIntent().getExtras().getBoolean("album");
         }
 
-        loadAdapterFromServer();
+        loadAdapterFromServer(id);
 
     }
 
     private void loadAdapterWithMock() {
 
         for (int i = 0; i < 25; i++) {
-            Song song = new Song();
-            song.setTitle("Canción " + i);
-            song.setArtist("Artista " + i);
-            songsList.add(song);
+//            Song song = new Song();
+//            song.setTitle("Canción " + i);
+//            song.setArtist("Artista " + i);
+//            songsList.add(song);
         }
     }
 
-    private void loadAdapterFromServer() {
+    private void loadAdapterFromServer(String id) {
         SharedPreferences settings = PreferenceManager
             .getDefaultSharedPreferences(getApplicationContext());
         String auth_token_string = settings.getString("auth_token", "null");
 
         if (!"null".equals(auth_token_string)) {
-            SongsService songsService = TokenGenerator.createService(SongsService.class, auth_token_string);
-            Call<ServerResponse> allSongs = songsService.getSongs();
-            allSongs.enqueue(new Callback<ServerResponse>() {
-                @Override
-                public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
-                    if (response.isSuccessful()) {
-                        songsList = response.body().getSongs();
-                        loadAdapter();
+            if (id.isEmpty()) {
+                SongsService songsService = TokenGenerator.createService(SongsService.class, auth_token_string);
+                Call<ServerResponse> allSongs = songsService.getSongs();
+                allSongs.enqueue(new Callback<ServerResponse>() {
+                    @Override
+                    public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                        if (response.isSuccessful()) {
+                            songsList = response.body().getSongs();
+                            loadAdapter();
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+                    @Override
+                    public void onFailure(final Call<ServerResponse> call, final Throwable t) {
 
-                }
-            });
+                    }
+                });
+            } else {
+                AlbumService albumService = TokenGenerator.createService(AlbumService.class, auth_token_string);
+                Call<ServerResponse> albumSongs = albumService.getAlbum(Integer.valueOf(id));
+                albumSongs.enqueue(new Callback<ServerResponse>() {
+                    @Override
+                    public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                        if (response.isSuccessful()) {
+                            songsList = response.body().getAlbum().getSongs();
+                            loadAdapter();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+
+                    }
+                });
+            }
         }
     }
 
@@ -105,6 +129,16 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
     @Override
     public void recyclerViewListClicked(final View v, final int position) {
         Song song = songsList.get(position);
+        Intent i = new Intent(this, SongActivity.class);
+        String artistsStr = "";
+        for (Artist artist : song.getArtist()) {
+            artistsStr += artist.getName() + " ";
+        }
+        i.putExtra("artist", artistsStr);
+        i.putExtra("album", song.getAlbum());
+        i.putExtra("title",song.getTitle());
+        i.putExtra("songid", String.valueOf(song.getId()));
+        startActivity(i);
         Toast.makeText(SongsListActivity.this, "Cliqueaste en la canción " + song.getTitle(), Toast.LENGTH_LONG).show();
     }
 }

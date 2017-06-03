@@ -134,6 +134,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             startActivity(i);
         } else if (id == R.id.nav_playing) {
             Intent i = new Intent(this, SongActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
         } else if (id == R.id.nav_chat) {
             Intent i = new Intent(this, ContactsActivity.class);

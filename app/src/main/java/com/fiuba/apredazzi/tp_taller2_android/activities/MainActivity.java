@@ -37,6 +37,8 @@ import com.fiuba.apredazzi.tp_taller2_android.api.UsersService;
 import com.fiuba.apredazzi.tp_taller2_android.model.Artist;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -73,6 +75,11 @@ public class MainActivity extends BaseActivity {
         SharedPreferences settings = PreferenceManager
             .getDefaultSharedPreferences(getApplicationContext());
         auth_token_string = settings.getString("auth_token", "null");
+
+        String myId = settings.getString("myId", null);
+        if (myId != null) {
+            FirebaseMessaging.getInstance().subscribeToTopic("user_" + myId);
+        }
 
         ArtistService artistService = TokenGenerator.createService(ArtistService.class, auth_token_string);
         Call<ServerResponse> listArtistas = artistService.getArtists();

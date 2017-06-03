@@ -71,7 +71,7 @@ public class AlbumsActivity extends BaseActivity {
     private void startActivity(final AdapterView<?> parent, final int position) {
         Intent intent = new Intent(AlbumsActivity.this, SongsListActivity.class);
         intent.putExtra("type", "albums");
-        intent.putExtra("id", parent.getItemIdAtPosition(position));
+        intent.putExtra("id", String.valueOf(parent.getItemIdAtPosition(position)));
         startActivity(intent);
     }
 

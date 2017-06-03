@@ -28,6 +28,9 @@ public class ServerResponse {
     @SerializedName("albums")
     private List<Album> albums;
 
+    @SerializedName("album")
+    private Album album;
+
     @SerializedName("tracks")
     private List<Song> songs;
 
@@ -61,6 +64,14 @@ public class ServerResponse {
 
     public void setAlbums(final List<Album> albums) {
         this.albums = albums;
+    }
+
+    public Album getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(final Album album) {
+        this.album = album;
     }
 
     public List<Song> getSongs() {
