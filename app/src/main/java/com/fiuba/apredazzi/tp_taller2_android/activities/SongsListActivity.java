@@ -17,6 +17,7 @@ import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
 import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.adapter.SongAdapter;
 import com.fiuba.apredazzi.tp_taller2_android.api.AlbumService;
+import com.fiuba.apredazzi.tp_taller2_android.api.PlaylistService;
 import com.fiuba.apredazzi.tp_taller2_android.api.SongsService;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
 import com.fiuba.apredazzi.tp_taller2_android.interfaces.RecyclerViewClickListener;
@@ -35,6 +36,11 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
     private RecyclerView mRecyclerView;
     private SongAdapter adapter;
     private ProgressBar progressBar;
+
+    private List<String> songsListStr;
+
+    private boolean album;
+    private boolean playlist;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +62,14 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
 
         // loadAdapterWithMock();
 
+        album = false;
+        playlist = false;
+
         String id = "";
         if (getIntent().getExtras() != null) {
             id = getIntent().getExtras().getString("id");
-            boolean album = getIntent().getExtras().getBoolean("album");
+            album = getIntent().getExtras().getBoolean("albums");
+            playlist = getIntent().getExtras().getBoolean("playlists");
         }
 
         loadAdapterFromServer(id);
@@ -96,10 +106,10 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
 
                     @Override
                     public void onFailure(final Call<ServerResponse> call, final Throwable t) {
-
+                        Toast.makeText(SongsListActivity.this, "Error onFailure playlist", Toast.LENGTH_LONG).show();
                     }
                 });
-            } else {
+            } else if (album) {
                 AlbumService albumService = TokenGenerator.createService(AlbumService.class, auth_token_string);
                 Call<ServerResponse> albumSongs = albumService.getAlbum(Integer.valueOf(id));
                 albumSongs.enqueue(new Callback<ServerResponse>() {
@@ -116,6 +126,25 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
 
                     }
                 });
+            } else if (playlist) {
+                PlaylistService playlistService = TokenGenerator.createService(PlaylistService.class, auth_token_string);
+                Call<ServerResponse> playlistSongs = playlistService.getSongsFromPlaylist(Integer.valueOf(id));
+                playlistSongs.enqueue(new Callback<ServerResponse>() {
+                    @Override
+                    public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                        if (response.isSuccessful()) {
+                            songsList = response.body().getSongs();
+                            loadAdapter();
+                        } else {
+                            Toast.makeText(SongsListActivity.this, "Error != 20 playlist", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+                        Toast.makeText(SongsListActivity.this, "OnFailure playlist", Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         }
     }
@@ -124,6 +153,10 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
         progressBar.setVisibility(View.GONE);
         adapter = new SongAdapter(SongsListActivity.this, songsList, this);
         mRecyclerView.setAdapter(adapter);
+        songsListStr = new ArrayList<String>();
+        for (Song item : songsList) {
+            songsListStr.add(String.valueOf(item.getId()));
+        }
     }
 
     @Override
@@ -131,13 +164,23 @@ public class SongsListActivity extends BaseActivity implements RecyclerViewClick
         Song song = songsList.get(position);
         Intent i = new Intent(this, SongActivity.class);
         String artistsStr = "";
-        for (Artist artist : song.getArtist()) {
-            artistsStr += artist.getName() + " ";
+        if (song.getArtist() != null) {
+            for (Artist artist : song.getArtist()) {
+                artistsStr += artist.getName() + " ";
+            }
+            i.putExtra("artist", artistsStr);
         }
-        i.putExtra("artist", artistsStr);
-        i.putExtra("album", song.getAlbum());
-        i.putExtra("title",song.getTitle());
-        i.putExtra("songid", String.valueOf(song.getId()));
+        if (song.getAlbum() != null && song.getAlbum().getName() != null) {
+            i.putExtra("album", song.getAlbum().getName());
+        }
+        if (song.getTitle() != null) {
+            i.putExtra("title",song.getTitle());
+        }
+        if (song.getId() != 0) {
+            i.putExtra("songid", String.valueOf(song.getId()));
+            ArrayList<String> finalList = new ArrayList<String>(songsListStr.subList(position+1, songsListStr.size()));
+            i.putStringArrayListExtra("songList", (ArrayList<String>) finalList);
+        }
         startActivity(i);
         Toast.makeText(SongsListActivity.this, "Cliqueaste en la canción " + song.getTitle(), Toast.LENGTH_LONG).show();
     }

@@ -26,7 +26,7 @@ public interface SongsService {
     Call<ServerResponse> getSongs();
 
     @GET("tracks/{id}")
-    Call<Song> getSong(@Path("id") int id);
+    Call<ServerResponse> getSong(@Path("id") int id);
 
     @PUT("tracks/{id}")
     Call<Song> updateSong(@Path("id") int id);

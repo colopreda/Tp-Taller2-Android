@@ -1,5 +1,6 @@
 package com.fiuba.apredazzi.tp_taller2_android.model;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 /**
@@ -20,6 +21,8 @@ public class User {
     private String lastName;
     private String password;
     private List<String> images;
+    @SerializedName("user_song")
+    private UserSong userSong;
 
     public User() {
     }
@@ -131,5 +134,13 @@ public class User {
 
     public void setFriendId(final String friendId) {
         this.friend_id = friendId;
+    }
+
+    public UserSong getUserSong() {
+        return userSong;
+    }
+
+    public void setUserSong(final UserSong userSong) {
+        this.userSong = userSong;
     }
 }

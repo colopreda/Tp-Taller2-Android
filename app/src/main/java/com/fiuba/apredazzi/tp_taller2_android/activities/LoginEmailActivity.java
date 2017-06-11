@@ -231,6 +231,8 @@ public class LoginEmailActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         //start the profile activity
                         goToMainActivity();
+                    } else {
+                        goToMainActivity();
                     }
                 }
             });

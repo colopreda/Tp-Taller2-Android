@@ -48,6 +48,8 @@
         </activity>
         <activity android:name=".activities.AlbumsActivity">
         </activity>
+        <activity android:name=".activities.PlaylistActivity">
+        </activity>
 
         <service android:name=".services.MyFirebaseMessagingService">
         <intent-filter>
