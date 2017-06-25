@@ -7,12 +7,12 @@
 
     <ImageView
         android:id="@+id/image_grid_view"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:src="@drawable/ic_play_circle_outline_black_24dp"/>
 
     <RelativeLayout
-        android:layout_width="200dp"
+        android:layout_width="150dp"
         android:layout_height="wrap_content">
 
         <TextView
@@ -20,6 +20,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
+            android:lines="2"
             android:gravity="center"
             android:layout_toStartOf="@+id/add_to_playlist"
             android:textSize="18sp" />

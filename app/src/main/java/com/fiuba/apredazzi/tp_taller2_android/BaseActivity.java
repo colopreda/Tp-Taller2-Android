@@ -21,11 +21,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import com.facebook.login.LoginManager;
 import com.fiuba.apredazzi.tp_taller2_android.activities.AlbumsActivity;
+import com.fiuba.apredazzi.tp_taller2_android.activities.ArtistsActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.ChatActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.ContactsActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.LoginEmailActivity;
@@ -34,12 +36,17 @@ import com.fiuba.apredazzi.tp_taller2_android.activities.PlaylistActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.ProfileActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.SongActivity;
 import com.fiuba.apredazzi.tp_taller2_android.activities.SongsListActivity;
+import com.fiuba.apredazzi.tp_taller2_android.model.Song;
 import com.google.firebase.auth.FirebaseAuth;
 import com.squareup.picasso.Picasso;
 
 public class BaseActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     protected DrawerLayout drawer;
+
+    final int ARTISTA = 0;
+    final int ALBUM = 1;
+    final int CANCION = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,9 +142,15 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             startActivity(i);
         } else if (id == R.id.nav_canciones) {
             Intent i = new Intent(this, SongsListActivity.class);
+            i.putExtra("songs", true);
+            i.putExtra("drawer", true);
             startActivity(i);
         } else if (id == R.id.nav_albums) {
             Intent i = new Intent(this, AlbumsActivity.class);
+            startActivity(i);
+        } else if (id == R.id.nav_artists) {
+            Intent i = new Intent(this, ArtistsActivity.class);
+            i.putExtra("drawer", true);
             startActivity(i);
         } else if (id == R.id.nav_playlists) {
             Intent i = new Intent(this, PlaylistActivity.class);
@@ -168,6 +181,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             FirebaseAuth.getInstance().signOut();
 
             Intent i = new Intent(this, LoginEmailActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(i);
         }
 
@@ -189,7 +203,7 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
 
         LayoutInflater inflater = getLayoutInflater();
 
-        View dialogView = inflater.inflate(R.layout.filter_dialog, null);
+        final View dialogView = inflater.inflate(R.layout.filter_dialog, null);
 
         builder.setTitle("Buscar");
 //        builder.setView(R.layout.filter_dialog);
@@ -198,7 +212,28 @@ public class BaseActivity extends AppCompatActivity implements NavigationView.On
             .setPositiveButton("Buscar", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
-
+                    Spinner spinner = (Spinner) dialogView.findViewById(R.id.spinner_possibilities);
+                    EditText query = (EditText) dialogView.findViewById(R.id.edittext_filter);
+                    switch (spinner.getSelectedItemPosition()) {
+                        case ARTISTA:
+                            Intent i = new Intent(BaseActivity.this, ArtistsActivity.class);
+                            i.putExtra("filter", query.getText().toString());
+                            startActivity(i);
+                            break;
+                        case ALBUM:
+                            Intent intent = new Intent(BaseActivity.this, AlbumsActivity.class);
+                            intent.putExtra("filter", query.getText().toString());
+                            startActivity(intent);
+                            break;
+                        case CANCION:
+                            Intent songsIntent = new Intent(BaseActivity.this, SongsListActivity.class);
+                            songsIntent.putExtra("songs", true);
+                            songsIntent.putExtra("filter", query.getText().toString());
+                            startActivity(songsIntent);
+                            break;
+                        default:
+                            break;
+                    }
                 }
             })
             .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {

@@ -12,6 +12,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Created by apredazzi on 4/19/17.
@@ -23,7 +24,13 @@ public interface SongsService {
     Call<ResponseBody> addSong(@Body Song song);
 
     @GET("tracks")
-    Call<ServerResponse> getSongs();
+    Call<ServerResponse> getSongs(@Query("name") String songName);
+
+    @GET("tracks/me/recommended")
+    Call<ServerResponse> getRecommendedSongs();
+
+    @GET("tracks/me/favorites")
+    Call<ServerResponse> getFavoriteSongs();
 
     @GET("tracks/{id}")
     Call<ServerResponse> getSong(@Path("id") int id);

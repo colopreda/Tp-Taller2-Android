@@ -30,10 +30,10 @@ public interface PlaylistService {
     Call<Playlist> updatePlaylist(@Path("id") int id, @Body Playlist playlist);
 
     @DELETE("playlists/{id}")
-    Call<ResponseBody> detelePlaylist(@Path("id") int id);
+    Call<ResponseBody> deletePlaylist(@Path("id") int id);
 
     @DELETE("playlists/{playlist_id}/tracks/{track_id}")
-    Call<ResponseBody> deteleSongFromPlaylist(@Path("playlist_id") int playlist_id, @Path("track_id") int track_id);
+    Call<ResponseBody> deleteSongFromPlaylist(@Path("playlist_id") int playlist_id, @Path("track_id") int track_id);
 
     @PUT("playlists/{playlist_id}/tracks/{track_id}")
     Call<ResponseBody> addSongToPlaylist(@Path("playlist_id") int playlist_id, @Path("track_id") int track_id);

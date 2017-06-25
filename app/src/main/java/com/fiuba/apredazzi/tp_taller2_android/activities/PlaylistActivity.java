@@ -157,10 +157,10 @@ public class PlaylistActivity extends BaseActivity {
             @Override
             public void onResponse(final Call<ResponseBody> call, final Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(PlaylistActivity.this, "Agregue playlist", Toast.LENGTH_LONG).show();
+                    Toast.makeText(PlaylistActivity.this, "Agregue playlist con éxito", Toast.LENGTH_LONG).show();
                     loadPlaylistFromServer();
                 } else {
-                    Toast.makeText(PlaylistActivity.this, "Recibi != 200 - agregar playlists", Toast.LENGTH_LONG).show();
+                    Toast.makeText(PlaylistActivity.this, "Hubo un erro al agregar la playlist", Toast.LENGTH_LONG).show();
                 }
             }
 

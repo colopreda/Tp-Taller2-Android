@@ -1,21 +1,28 @@
 package com.fiuba.apredazzi.tp_taller2_android.adapter;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.fiuba.apredazzi.tp_taller2_android.R;
+import com.fiuba.apredazzi.tp_taller2_android.activities.SongsListActivity;
 import com.fiuba.apredazzi.tp_taller2_android.api.PlaylistService;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
 import com.fiuba.apredazzi.tp_taller2_android.interfaces.RecyclerViewClickListener;
@@ -40,13 +47,18 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.CustomViewHold
     private List<Playlist> listaPlaylists;
     private Context mContext;
     private static RecyclerViewClickListener mListener;
+    private boolean isPlaylist;
+    private String playlistId;
 
     private String songId;
 
-    public SongAdapter(Context context, List<Song> feedItemList, RecyclerViewClickListener itemClickListener) {
+    public SongAdapter(Context context, List<Song> feedItemList, RecyclerViewClickListener itemClickListener, boolean isPlaylist, @Nullable
+        String playlistId) {
         this.feedItemList = feedItemList;
         this.mContext = context;
         this.mListener = itemClickListener;
+        this.isPlaylist = isPlaylist;
+        this.playlistId = playlistId;
     }
 
     @Override
@@ -95,6 +107,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.CustomViewHold
         protected TextView textViewTitle;
         protected TextView textViewSubtitle;
         protected CardView cardView;
+        protected ProgressDialog progressDialog;
 
         public CustomViewHolder(View view) {
             super(view);
@@ -102,12 +115,26 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.CustomViewHold
             textViewTitle = (TextView) view.findViewById(R.id.title_row);
             textViewSubtitle = (TextView) view.findViewById(R.id.subtitle_row);
             addImageView = (ImageView) view.findViewById(R.id.add_playlist);
-            addImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(final View v) {
-                    loadPlaylistFromServer(getLayoutPosition());
-                }
-            });
+            if (isPlaylist) {
+                progressDialog = new ProgressDialog(mContext);
+                progressDialog.setMessage("Eliminando canción de la playlist...");
+                addImageView.setImageResource(R.drawable.ic_close);
+                addImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        progressDialog.show();
+                        deleteFromPlaylist(Integer.valueOf(playlistId), feedItemList.get(getLayoutPosition()).getId(), progressDialog);
+                    }
+                });
+            } else {
+                addImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        loadPlaylistFromServer(getLayoutPosition());
+                    }
+                });
+            }
+
             cardView = (CardView) view.findViewById(R.id.cardview_song);
 
             cardView.setOnClickListener(this);
@@ -117,6 +144,36 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.CustomViewHold
         public void onClick(final View v) {
             mListener.recyclerViewListClicked(v, getLayoutPosition());
         }
+    }
+
+    private void deleteFromPlaylist(final int playlistId, final int layoutPosition, final ProgressDialog progressDialog) {
+        SharedPreferences settings = PreferenceManager
+            .getDefaultSharedPreferences(mContext);
+        String auth_token_string = settings.getString("auth_token", "null");
+        PlaylistService playlistService = TokenGenerator.createService(PlaylistService.class, auth_token_string);
+        final Call<ResponseBody> deleteSong = playlistService.deleteSongFromPlaylist(playlistId, layoutPosition);
+        deleteSong.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(final Call<ResponseBody> call, final Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("Borre","MID");
+                    Intent i = new Intent(mContext, SongsListActivity.class);
+                    i.putExtra("playlists", true);
+                    i.putExtra("id", String.valueOf(playlistId));
+                    mContext.startActivity(i);
+                    ((Activity)mContext).finish();
+                } else {
+                    Log.d("falle 404","MID");
+                }
+                progressDialog.dismiss();
+            }
+
+            @Override
+            public void onFailure(final Call<ResponseBody> call, final Throwable t) {
+                Log.d("onFailure","MID");
+                progressDialog.dismiss();
+            }
+        });
     }
 
     private void loadPlaylistFromServer(final int position) {

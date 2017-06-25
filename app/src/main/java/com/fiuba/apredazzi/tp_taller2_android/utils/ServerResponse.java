@@ -1,5 +1,6 @@
 package com.fiuba.apredazzi.tp_taller2_android.utils;
 
+import com.fiuba.apredazzi.tp_taller2_android.model.Activity;
 import com.fiuba.apredazzi.tp_taller2_android.model.Album;
 import com.fiuba.apredazzi.tp_taller2_android.model.Artist;
 import com.fiuba.apredazzi.tp_taller2_android.model.Playlist;
@@ -40,6 +41,9 @@ public class ServerResponse {
 
     @SerializedName("playlists")
     private List<Playlist> playlists;
+
+    @SerializedName("activity")
+    private Activity activities;
 
     public User getUser() {
         return user;
@@ -111,5 +115,13 @@ public class ServerResponse {
 
     public void setSong(final Song song) {
         this.song = song;
+    }
+
+    public Activity getActivities() {
+        return activities;
+    }
+
+    public void setActivities(final Activity activities) {
+        this.activities = activities;
     }
 }

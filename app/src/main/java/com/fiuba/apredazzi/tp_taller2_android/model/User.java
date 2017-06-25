@@ -20,6 +20,7 @@ public class User {
     private String firstName;
     private String lastName;
     private String password;
+    private FBUser fb;
     private List<String> images;
     @SerializedName("user_song")
     private UserSong userSong;
@@ -54,6 +55,10 @@ public class User {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+    }
+
+    public User(final FBUser fb) {
+        this.fb = fb;
     }
 
     public String getEmail() {
@@ -142,5 +147,13 @@ public class User {
 
     public void setUserSong(final UserSong userSong) {
         this.userSong = userSong;
+    }
+
+    public FBUser getFb() {
+        return fb;
+    }
+
+    public void setFb(final FBUser fb) {
+        this.fb = fb;
     }
 }

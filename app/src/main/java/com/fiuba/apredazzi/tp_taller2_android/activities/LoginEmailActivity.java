@@ -166,12 +166,13 @@ public class LoginEmailActivity extends AppCompatActivity {
 
         LoginService loginService = retrofit.create(LoginService.class);
         FBUser fbuser = new FBUser(accessToken.getUserId(), accessToken.getToken());
-        Call<Token> callFB = loginService.generateToken(fbuser);
+        User fbUser = new User(fbuser);
+        Call<Token> callFB = loginService.generateToken(fbUser);
         callFB.enqueue(new Callback<Token>() {
             @Override
             public void onResponse(final Call<Token> call, final Response<Token> response) {
                 progressDialog.hide();
-                if (response.code() != 401) {
+                if (response.isSuccessful()) {
                     Toast.makeText(LoginEmailActivity.this, "Logueo de Facebook con exito", Toast.LENGTH_LONG).show();
                     SharedPreferences settings = PreferenceManager
                         .getDefaultSharedPreferences(getApplicationContext());
@@ -184,12 +185,14 @@ public class LoginEmailActivity extends AppCompatActivity {
                     }
                     editor.commit();
                     goToMainActivity();
+                } else {
+                    Toast.makeText(LoginEmailActivity.this, "Ocurrió un error. Intente mas tarde", Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(final Call<Token> call, final Throwable t) {
-                Toast.makeText(LoginEmailActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(LoginEmailActivity.this, "Ocurrió un error. Intente mas tarde", Toast.LENGTH_LONG).show();
                 progressDialog.hide();
             }
         });
@@ -265,8 +268,8 @@ public class LoginEmailActivity extends AppCompatActivity {
         call.enqueue(new Callback<Token>() {
             @Override
             public void onResponse(final Call<Token> call, final Response<Token> response) {
-                Toast.makeText(LoginEmailActivity.this, "Logueo con exito", Toast.LENGTH_LONG).show();
-                if (response.code() != 404) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Toast.makeText(LoginEmailActivity.this, "Logueo con exito", Toast.LENGTH_LONG).show();
                     SharedPreferences settings = PreferenceManager
                         .getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor editor = settings.edit();
@@ -274,12 +277,15 @@ public class LoginEmailActivity extends AppCompatActivity {
                     editor.commit();
                     getMe(response.body().getToken(), password);
 //                    loginFirebaseUser(userClass, password);
+                } else {
+                    Toast.makeText(LoginEmailActivity.this, "Error al iniciar sesión", Toast.LENGTH_LONG).show();
+                    progressDialog.hide();
                 }
             }
 
             @Override
             public void onFailure(final Call<Token> call, final Throwable t) {
-                Toast.makeText(LoginEmailActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(LoginEmailActivity.this, "Ocurrió un error. Intente nuevamente mas tarde.", Toast.LENGTH_LONG).show();
                 progressDialog.hide();
             }
         });
@@ -302,22 +308,21 @@ public class LoginEmailActivity extends AppCompatActivity {
                     editor.putString("email", me.getEmail());
                     editor.putString("country", me.getCountry());
                     editor.putString("birthday", me.getBirthdate());
-                    if (me.getImages() != null) {
+                    if (me.getImages() != null && !me.getImages().isEmpty()) {
                         editor.putString("profile_url", me.getImages().get(0));
                     } else {
                         editor.putString("profile_url", null);
                     }
                     editor.commit();
                     loginFirebaseUser(me.getEmail(), password);
-                    Toast.makeText(LoginEmailActivity.this, "Nombre e email OK", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(LoginEmailActivity.this, "Falle onResponse ME: " + response.errorBody(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginEmailActivity.this, "Hubo un error. Intente nuevamente mas tarde", Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(final Call<ServerResponse> call, final Throwable t) {
-                Toast.makeText(LoginEmailActivity.this, "Falle ME", Toast.LENGTH_LONG).show();
+
             }
         });
     }
@@ -343,15 +348,12 @@ public class LoginEmailActivity extends AppCompatActivity {
                         editor.putString("profile_url", me.getImages().get(0));
                     }
                     editor.commit();
-                    Toast.makeText(LoginEmailActivity.this, "Nombre e email OK", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(LoginEmailActivity.this, "Falle onResponse ME: " + response.errorBody(), Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(final Call<ServerResponse> call, final Throwable t) {
-                Toast.makeText(LoginEmailActivity.this, "Falle ME", Toast.LENGTH_LONG).show();
+
             }
         });
     }

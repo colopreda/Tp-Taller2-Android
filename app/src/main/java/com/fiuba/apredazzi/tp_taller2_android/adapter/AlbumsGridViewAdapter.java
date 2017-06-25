@@ -103,7 +103,7 @@ public class AlbumsGridViewAdapter extends BaseAdapter {
 
     private void startActivity(final int position) {
         Intent intent = new Intent(context, SongsListActivity.class);
-        intent.putExtra("type", "albums");
+        intent.putExtra("albums", true);
         intent.putExtra("id", String.valueOf(getItemId(position)));
         context.startActivity(intent);
     }

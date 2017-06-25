@@ -11,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
@@ -54,10 +55,15 @@ public class ContactsActivity extends BaseActivity implements RecyclerViewClickL
             .getDefaultSharedPreferences(getApplicationContext());
         auth_token_string = settings.getString("auth_token", "null");
 
+        setTitleTooblar("Chat");
+
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         floating = (FloatingActionButton) findViewById(R.id.floating_add);
+
+        LinearLayout buttons = (LinearLayout) findViewById(R.id.layout_buttons);
+        buttons.setVisibility(View.GONE);
 
         floating.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,9 +128,8 @@ public class ContactsActivity extends BaseActivity implements RecyclerViewClickL
                         contactsList = response.body().getContacts();
                         setAdapter();
                         floating.setVisibility(View.VISIBLE);
-                        Toast.makeText(ContactsActivity.this, "Recibi usuarios", Toast.LENGTH_LONG).show();
                     } else {
-                        Toast.makeText(ContactsActivity.this, "Falle onResponse: " + response.errorBody(),
+                        Toast.makeText(ContactsActivity.this, "Hubo un error al obtener los contactos",
                             Toast.LENGTH_LONG).show();
                     }
                 }
@@ -175,7 +180,6 @@ public class ContactsActivity extends BaseActivity implements RecyclerViewClickL
 
             @Override
             public void onFailure(final Call<ResponseBody> call, final Throwable t) {
-                Toast.makeText(ContactsActivity.this, "OnFailure al agregar contacto", Toast.LENGTH_LONG).show();
                 progressBar.setVisibility(View.GONE);
                 Intent intent = new Intent(ContactsActivity.this, ContactsActivity.class);
                 startActivity(intent);

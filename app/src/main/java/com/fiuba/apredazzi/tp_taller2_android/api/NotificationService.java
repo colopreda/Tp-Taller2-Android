@@ -15,8 +15,9 @@ import retrofit2.http.POST;
 public interface NotificationService {
 
     String BASE_URL = "http://fcm.googleapis.com/";
+    String API_KEY = ""; // Here goes api key
 
-    @Headers("Authorization: key=")// + API_KEY)
+    @Headers("Authorization: key=" + API_KEY)
     @POST("/fcm/send")
     Call<ResponseBody> sendNotification(@Body NotificationRequest notification);
 

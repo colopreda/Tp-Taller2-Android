@@ -14,26 +14,25 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
 import com.fiuba.apredazzi.tp_taller2_android.R;
-import com.fiuba.apredazzi.tp_taller2_android.adapter.AlbumsGridViewAdapter;
-import com.fiuba.apredazzi.tp_taller2_android.api.AlbumService;
+import com.fiuba.apredazzi.tp_taller2_android.adapter.ArtistsGridViewAdapter;
+import com.fiuba.apredazzi.tp_taller2_android.api.ArtistService;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
-import com.fiuba.apredazzi.tp_taller2_android.model.Album;
+import com.fiuba.apredazzi.tp_taller2_android.model.Artist;
 import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
-import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Created by apredazzi on 5/1/17.
+ * Created by apredazzi on 6/13/17.
  */
 
-public class AlbumsActivity extends BaseActivity {
+public class ArtistsActivity extends BaseActivity {
 
     private GridView gridView;
 
-    private List<Album> albumList;
+    private List<Artist> artistList;
 
     String auth_token_string;
 
@@ -46,71 +45,69 @@ public class AlbumsActivity extends BaseActivity {
         FrameLayout frameLayout = (FrameLayout) findViewById(R.id.content_frame);
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
+        //inflate your activity layout here!
+//        View contentView = inflater.inflate(R.layout.content_main, frameLayout, false);
         View contentView = inflater.inflate(R.layout.activity_grid_layout, frameLayout, false);
         frameLayout.addView(contentView);
 
         gridView = (GridView) findViewById(R.id.gridView);
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
-                startActivity(parent, position);
-            }
-        });
-
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
         SharedPreferences settings = PreferenceManager
             .getDefaultSharedPreferences(getApplicationContext());
         auth_token_string = settings.getString("auth_token", "null");
 
-        setTitleTooblar("Álbumes");
-
-        getAlbumsFromServer();
-    }
-
-    private void startActivity(final AdapterView<?> parent, final int position) {
-        Intent intent = new Intent(AlbumsActivity.this, SongsListActivity.class);
-        intent.putExtra("albums", true);
-        intent.putExtra("id", String.valueOf(parent.getItemIdAtPosition(position)));
-        startActivity(intent);
-    }
-
-    private void getAlbumsFromServer() {
-        AlbumService albumService = TokenGenerator.createService(AlbumService.class, auth_token_string);
-        Call<ServerResponse> listAlbums;
+        ArtistService artistService = TokenGenerator.createService(ArtistService.class, auth_token_string);
+        Call<ServerResponse> listArtistas;
         if (getIntent().getExtras() != null && getIntent().hasExtra("filter")) {
             String queryParam = getIntent().getExtras().getString("filter");
-            listAlbums = albumService.getAlbums(queryParam);
+            listArtistas = artistService.getArtists(queryParam);
+            setTitleTooblar("Artistas");
+        } else if (getIntent().getExtras() != null && getIntent().hasExtra("drawer")) {
+            listArtistas = artistService.getFavoriteArtists();
+            setTitleTooblar("Mis artistas");
         } else {
-            listAlbums = albumService.getAlbums(null);
+            listArtistas = artistService.getArtists(null);
+            setTitleTooblar("Artistas");
         }
-        listAlbums.enqueue(new Callback<ServerResponse>() {
+
+        listArtistas.enqueue(new Callback<ServerResponse>() {
             @Override
             public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
                 if (response.isSuccessful()) {
-                    albumList = response.body().getAlbums();
-                    progressBar.setVisibility(View.GONE);
+                    artistList = response.body().getArtists();
                     setAdapter();
-                } else {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(AlbumsActivity.this, "Recibi != 200 - albumes", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(ArtistsActivity.this, "Hubo un error al buscar los artistas",
+                        Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(final Call<ServerResponse> call, final Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(AlbumsActivity.this, "onFailure albums", Toast.LENGTH_LONG).show();
+                Toast.makeText(ArtistsActivity
+                    .this, "Falle", Toast.LENGTH_LONG).show();
             }
         });
+
     }
 
     private void setAdapter() {
-//        albumList = new ArrayList<>();
-//        albumList.add(new Album(1, "Album1", null, null, null, null));
-//        albumList.add(new Album(2, "Album2", null, null, null, null));
-//        albumList.add(new Album(3, "Album3", null, null, null, null));
-//        albumList.add(new Album(4, "Album4", null, null, null, null));
-        gridView.setAdapter(new AlbumsGridViewAdapter(AlbumsActivity.this, albumList));
+        gridView.setAdapter(new ArtistsGridViewAdapter(this, artistList));
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
+                Intent intent = new Intent(ArtistsActivity.this, SongsListActivity.class);
+                intent.putExtra("artists", true);
+                intent.putExtra("id", String.valueOf(parent.getItemIdAtPosition(position)));
+                if ((artistList.get(position).getFollowed() == null) || (!artistList.get(position).getFollowed().isEmpty())) {
+                    intent.putExtra("followed", true);
+                } else {
+                    intent.putExtra("followed", false);
+                }
+                startActivity(intent);
+            }
+        });
     }
 }
