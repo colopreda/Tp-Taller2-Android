@@ -15,11 +15,14 @@
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id"/>
 
-        <activity android:name=".activities.LoginActivity">
+        <activity android:name=".activities.LoginActivity"
+                  android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activities.RegisterEmailActivity">
+        <activity android:name=".activities.RegisterEmailActivity"
+                  android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activities.LoginEmailActivity">
+        <activity android:name=".activities.LoginEmailActivity"
+                  android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -28,25 +31,39 @@
         </activity>
         <activity
             android:name=".activities.ProfileActivity"
-            android:label="@string/title_activity_profile">
+            android:label="@string/title_activity_profile"
+            android:screenOrientation="portrait">
         </activity>
         <activity
             android:name=".activities.MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activities.SongsListActivity">
+        <activity android:name=".activities.SongsListActivity"
+                  android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".BaseActivity">
+        <activity android:name=".BaseActivity"
+                  android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activities.ChatActivity">
+        <activity android:name=".activities.ChatActivity"
+                  android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activities.ContactsActivity">
+        <activity android:name=".activities.ContactsActivity"
+                  android:screenOrientation="portrait">
         </activity>
         <activity android:name=".activities.SongActivity"
-                  android:launchMode="singleTop">
+                  android:launchMode="singleTop"
+                  android:screenOrientation="portrait">
         </activity>
-        <activity android:name=".activities.AlbumsActivity">
+        <activity android:name=".activities.AlbumsActivity"
+                  android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".activities.PlaylistActivity"
+                  android:screenOrientation="portrait">
+        </activity>
+        <activity android:name=".activities.ArtistsActivity"
+                  android:screenOrientation="portrait">
         </activity>
 
         <service android:name=".services.MyFirebaseMessagingService">

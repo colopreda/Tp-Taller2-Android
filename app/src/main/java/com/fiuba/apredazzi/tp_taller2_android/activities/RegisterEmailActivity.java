@@ -65,16 +65,6 @@ public class RegisterEmailActivity extends AppCompatActivity {
         //initializing firebase auth object
         firebaseAuth = FirebaseAuth.getInstance();
 
-        //if getCurrentUser does not returns null
-//        if (firebaseAuth.getCurrentUser() != null) {
-//            //that means user is already logged in
-//            //so close this activity
-//            finish();
-//
-//            //and open profile activity
-//            startActivity(new Intent(getApplicationContext(), MainActivity.class));
-//        }
-
         //initializing views
         editTextFirstName = (EditText) findViewById(R.id.editTextName);
         editTextLastName = (EditText) findViewById(R.id.editTextLastName);
@@ -141,7 +131,6 @@ public class RegisterEmailActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 String str = response.body().get("country").getAsString();
-                Toast.makeText(RegisterEmailActivity.this, str, Toast.LENGTH_LONG).show();
                 setCountry(str);
             }
 
@@ -221,7 +210,7 @@ public class RegisterEmailActivity extends AppCompatActivity {
                                             finish();
                                             Toast.makeText(RegisterEmailActivity.this, "Registro con exito", Toast.LENGTH_LONG).show();
                                         } else {
-                                            Toast.makeText(RegisterEmailActivity.this, "Registration Error GUID", Toast.LENGTH_LONG).show();
+                                            Toast.makeText(RegisterEmailActivity.this, "Error al registrar", Toast.LENGTH_LONG).show();
                                         }
                                     }
                                 }
@@ -261,7 +250,7 @@ public class RegisterEmailActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     registerFirebase(userRegister.getEmail(), userRegister.getPassword(), userRegister.getFirst_name(), userRegister.getLast_name());
                 } else {
-                    Toast.makeText(RegisterEmailActivity.this, "Registration Error code != 200", Toast.LENGTH_LONG).show();
+                    Toast.makeText(RegisterEmailActivity.this, "Error al registrarse", Toast.LENGTH_LONG).show();
                 }
             }
 

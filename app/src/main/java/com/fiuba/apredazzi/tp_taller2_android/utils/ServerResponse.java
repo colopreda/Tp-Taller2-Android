@@ -1,7 +1,9 @@
 package com.fiuba.apredazzi.tp_taller2_android.utils;
 
+import com.fiuba.apredazzi.tp_taller2_android.model.Activity;
 import com.fiuba.apredazzi.tp_taller2_android.model.Album;
 import com.fiuba.apredazzi.tp_taller2_android.model.Artist;
+import com.fiuba.apredazzi.tp_taller2_android.model.Playlist;
 import com.fiuba.apredazzi.tp_taller2_android.model.Song;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import com.google.gson.annotations.SerializedName;
@@ -33,6 +35,15 @@ public class ServerResponse {
 
     @SerializedName("tracks")
     private List<Song> songs;
+
+    @SerializedName("track")
+    private Song song;
+
+    @SerializedName("playlists")
+    private List<Playlist> playlists;
+
+    @SerializedName("activity")
+    private Activity activities;
 
     public User getUser() {
         return user;
@@ -88,5 +99,29 @@ public class ServerResponse {
 
     public void setContacts(final List<User> contacts) {
         this.contacts = contacts;
+    }
+
+    public List<Playlist> getPlaylists() {
+        return playlists;
+    }
+
+    public void setPlaylists(final List<Playlist> playlists) {
+        this.playlists = playlists;
+    }
+
+    public Song getSong() {
+        return song;
+    }
+
+    public void setSong(final Song song) {
+        this.song = song;
+    }
+
+    public Activity getActivities() {
+        return activities;
+    }
+
+    public void setActivities(final Activity activities) {
+        this.activities = activities;
     }
 }

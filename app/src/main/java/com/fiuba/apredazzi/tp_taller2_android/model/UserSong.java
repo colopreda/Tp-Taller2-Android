@@ -7,11 +7,12 @@ package com.fiuba.apredazzi.tp_taller2_android.model;
 public class UserSong {
 
     private boolean liked;
-    private int rank;
+    private int rate;
+    private int id;
 
-    public UserSong(final boolean liked, final int rank) {
+    public UserSong(final boolean liked, final int rate) {
         this.liked = liked;
-        this.rank = rank;
+        this.rate = rate;
     }
 
     public boolean isLiked() {
@@ -22,11 +23,19 @@ public class UserSong {
         this.liked = liked;
     }
 
-    public int getRank() {
-        return rank;
+    public int getRate() {
+        return rate;
     }
 
-    public void setRank(final int rank) {
-        this.rank = rank;
+    public void setRate(final int rate) {
+        this.rate = rate;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(final int id) {
+        this.id = id;
     }
 }

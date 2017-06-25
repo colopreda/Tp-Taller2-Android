@@ -22,6 +22,9 @@ public interface UsersService {
     @GET("users/me")
     Call<ServerResponse> getUserMe();
 
+    @GET("users/me/activity")
+    Call<ServerResponse> getUsersActivity();
+
     @PUT("users/me")
     Call<ResponseBody> modifyUserMe(@Body User user);
 

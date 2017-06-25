@@ -11,6 +11,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Created by apredazzi on 5/1/17.
@@ -22,7 +23,7 @@ public interface AlbumService {
     Call<ResponseBody> addAlbums(@Body Album album);
 
     @GET("albums")
-    Call<ServerResponse> getAlbums();
+    Call<ServerResponse> getAlbums(@Query("name") String albumName);
 
     @GET("albums/{id}")
     Call<ServerResponse> getAlbum(@Path("id") int id);

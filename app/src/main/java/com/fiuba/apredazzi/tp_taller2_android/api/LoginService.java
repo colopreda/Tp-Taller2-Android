@@ -27,7 +27,7 @@ public interface LoginService {
     @POST("tokens")
     Call<Token> generateToken(@Body User user);
 
-    @POST("social/tokens")
+    @POST("tokens")
     Call<Token> generateToken(@Body FBUser fbuser);
 
     @GET("json")

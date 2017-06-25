@@ -8,10 +8,42 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.fiuba.apredazzi.tp_taller2_android.activities.SongsListActivity">
 
+    <LinearLayout
+        android:gravity="center"
+        android:id="@+id/layout_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/rep_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#ffffffff"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/rounded_button"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            android:text="REPRODUCIR TODAS"/>
+
+        <Button
+            android:id="@+id/follow_artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:textColor="#ffffffff"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/rounded_button"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            android:text="SEGUIR ARTISTA"/>
+
+    </LinearLayout>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/layout_buttons"
         android:scrollbars="vertical" />
 
     <ProgressBar
@@ -29,7 +61,6 @@
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="32dp"
         android:src="@drawable/ic_add"
-        android:visibility="gone"
-        />
+        android:visibility="gone"/>
 
 </RelativeLayout>

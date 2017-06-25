@@ -7,10 +7,11 @@ package com.fiuba.apredazzi.tp_taller2_android.model;
 public class FBUser {
 
     private String user_id;
+    private String authToken;
 
-    public FBUser(String user_id, String access_token) {
+    public FBUser(String user_id, String authToken) {
         this.user_id = user_id;
-        this.access_token = access_token;
+        this.authToken = authToken;
     }
 
     public String getUser_id() {
@@ -21,13 +22,11 @@ public class FBUser {
         this.user_id = user_id;
     }
 
-    public String getAccess_token() {
-        return access_token;
+    public String getAuthToken() {
+        return authToken;
     }
 
-    public void setAccess_token(final String access_token) {
-        this.access_token = access_token;
+    public void setAuthToken(final String authToken) {
+        this.authToken = authToken;
     }
-
-    private String access_token;
 }

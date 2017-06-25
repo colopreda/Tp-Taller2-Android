@@ -5,100 +5,108 @@
     android:layout_height="match_parent"
     android:background="#25272d">
 
-    <androgeek.material.library.MaterialMusicPlayerView
-        android:id="@+id/mpv"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
-        android:layout_below="@+id/textViewSinger"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="80dp"
-        app:buttonColor="#ff0028"
-        app:progressLoadedColor="#00815e"
-        app:textColor="#80FFFFFF"
-        app:textSize="14sp"/>
-
-    <RatingBar
-        android:id="@+id/rating"
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/mpv"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="16dp"
-        android:numStars="5"
-        android:stepSize="1"
-        android:theme="@style/RatingBar"/>
+        android:layout_centerInParent="true">
 
-    <RelativeLayout
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/rating"
-        android:layout_centerHorizontal="true">
-
-        <ImageView
-            android:id="@+id/like"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <androgeek.material.library.MaterialMusicPlayerView
+            android:id="@+id/mpv"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_below="@+id/textViewSinger"
             android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_heart"/>
+            android:layout_marginTop="40dp"
+            app:buttonColor="#ff0028"
+            app:progressLoadedColor="#00815e"
+            app:textColor="#80FFFFFF"
+            app:textSize="14sp"/>
 
-        <ImageView
-            android:id="@+id/like_selected"
-            android:visibility="gone"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <RatingBar
+            android:id="@+id/rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/mpv"
             android:layout_centerHorizontal="true"
-            android:tint="@color/red"
-            android:src="@drawable/ic_heart"/>
+            android:layout_margin="16dp"
+            android:numStars="5"
+            android:stepSize="1"
+            android:theme="@style/RatingBar"/>
+
+        <RelativeLayout
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/rating"
+            android:layout_centerHorizontal="true">
+
+            <ImageView
+                android:id="@+id/like"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/ic_heart"/>
+
+            <ImageView
+                android:id="@+id/like_selected"
+                android:visibility="gone"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerHorizontal="true"
+                android:tint="@color/red"
+                android:src="@drawable/ic_heart"/>
 
 
-        <ImageView
-            android:id="@+id/next"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentEnd="true"
-            android:background="@drawable/ic_next"/>
+            <ImageView
+                android:id="@+id/next"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/ic_next"/>
 
 
-        <ImageView
-            android:id="@+id/previous"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentStart="true"
-            android:background="@drawable/ic_previous"/>
+            <ImageView
+                android:id="@+id/previous"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentStart="true"
+                android:background="@drawable/ic_previous"/>
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/textViewSong"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text=""
+            android:textColor="@android:color/white"
+            android:textSize="22sp"/>
+
+        <TextView
+            android:id="@+id/textViewSinger"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textViewSong"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:text=""
+            android:textColor="#80FFFFFF"
+            android:textSize="15sp"/>
+
+        <View
+            android:id="@+id/view_loading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/com_facebook_button_login_silver_background_color"/>
+
+        <ProgressBar
+            android:id="@+id/progress_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"/>
+
     </RelativeLayout>
 
-    <View
-        android:id="@+id/view_loading"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/com_facebook_button_login_silver_background_color"/>
 
-    <ProgressBar
-        android:id="@+id/progress_loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
-
-    <TextView
-        android:id="@+id/textViewSong"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:textColor="@android:color/white"
-        android:textSize="22sp"
-        android:text="Shape of You"
-        android:layout_marginTop="50dp"/>
-
-
-    <TextView
-        android:id="@+id/textViewSinger"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:textColor="#80FFFFFF"
-        android:textSize="15sp"
-        android:text="Ed Sheeran"
-        android:layout_marginTop="10dp"
-        android:layout_below="@+id/textViewSong"/>
 
 </RelativeLayout>

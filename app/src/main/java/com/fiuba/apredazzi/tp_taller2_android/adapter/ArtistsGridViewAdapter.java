@@ -37,7 +37,7 @@ public class ArtistsGridViewAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(final int position) {
+    public Artist getItem(final int position) {
         return artists.get(position);
     }
 

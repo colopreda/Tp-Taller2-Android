@@ -12,6 +12,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Created by apredazzi on 4/30/17.
@@ -23,13 +24,19 @@ public interface ArtistService {
     Call<ResponseBody> addArtist(@Body Artist Artist);
 
     @GET("artists")
-    Call<ServerResponse> getArtists();
+    Call<ServerResponse> getArtists(@Query("name") String artistName);
+
+    @GET("artists/me/favorites")
+    Call<ServerResponse> getFavoriteArtists();
+
+    @GET("artists/me/recommended")
+    Call<ServerResponse> getRecommendedArtists();
 
     @GET("artists/{id}")
     Call<Artist> getArtist(@Path("id") int id);
 
     @GET("artists/{id}/tracks")
-    Call<List<Song>> getSongsFromArtist(@Path("id") int id);
+    Call<ServerResponse> getSongsFromArtist(@Path("id") int id);
 
     @PUT("artists/{id}")
     Call<Artist> updateArtist(@Path("id") int id, @Body Artist Artist);
@@ -41,6 +48,6 @@ public interface ArtistService {
     Call<ResponseBody> unfollowArtist(@Path("id") int id);
 
     @POST("artists/{id}/follow")
-    Call<ResponseBody> followArtist(@Path("id") int id, @Body boolean follow);
+    Call<ResponseBody> followArtist(@Path("id") int id);
 
 }

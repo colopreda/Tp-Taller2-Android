@@ -1,13 +1,10 @@
 package com.fiuba.apredazzi.tp_taller2_android.activities;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.media.Image;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -25,10 +22,14 @@ import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.api.CoverService;
 import com.fiuba.apredazzi.tp_taller2_android.api.SongsService;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
-import com.fiuba.apredazzi.tp_taller2_android.model.AlbumArt;
-import com.fiuba.apredazzi.tp_taller2_android.model.CoverArt;
+import com.fiuba.apredazzi.tp_taller2_android.model.Song;
+import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import com.fiuba.apredazzi.tp_taller2_android.model.UserSong;
+import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -41,7 +42,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SongActivity extends BaseActivity {
 
     MaterialMusicPlayerView mpv;
-    MediaPlayer mediaPlayer;
+    private static MediaPlayer mediaPlayer;
 
     TextView textViewSong;
     TextView textViewAditional;
@@ -50,10 +51,16 @@ public class SongActivity extends BaseActivity {
     RatingBar ratingBar;
     ImageView heart;
     ImageView heartSelected;
+    ImageView next;
+    ImageView previous;
 
     String album;
     String artist;
     String id;
+    ArrayList<String> songsList;
+    ArrayList<String> songsPlayed;
+
+    String myId;
 
     SongsService songsService;
 
@@ -82,6 +89,11 @@ public class SongActivity extends BaseActivity {
         viewLoading = findViewById(R.id.view_loading);
         heart = (ImageView) findViewById(R.id.like);
         heartSelected = (ImageView) findViewById(R.id.like_selected);
+        next = (ImageView) findViewById(R.id.next);
+        previous = (ImageView) findViewById(R.id.previous);
+        mpv = (MaterialMusicPlayerView) findViewById(R.id.mpv);
+
+        songsPlayed = new ArrayList<>();
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -90,10 +102,19 @@ public class SongActivity extends BaseActivity {
             album = extras.getString("album", "No album");
             id = extras.getString("songid", "0");
             textViewAditional.setText(artist + " - " + album);
+            songsList = extras.getStringArrayList("songList");
+            songsPlayed = extras.getStringArrayList("previousList");
+            updateInfoSong();
+        }
+
+        if (songsPlayed != null) {
+            Collections.reverse(songsPlayed);
         }
 
         addListenerOnRatingBar();
         addListenerOnHeart();
+        addListenerNext();
+        addListenerPrevious();
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         // set your desired log level
@@ -109,60 +130,181 @@ public class SongActivity extends BaseActivity {
             .client(httpClient.build())
             .build();
 
-        CoverService coverService = retrofit.create(CoverService.class);
-        Call<AlbumArt> cover =
-            coverService.getCoverArt("album.getinfo", CoverService.last_fm_api, artist, album, CoverService.format);
-        cover.enqueue(new Callback<AlbumArt>() {
+//        CoverService coverService = retrofit.create(CoverService.class);
+//        Call<AlbumArt> cover =
+//            coverService.getCoverArt("album.getinfo", CoverService.last_fm_api, artist, album, CoverService.format);
+//        cover.enqueue(new Callback<AlbumArt>() {
+//            @Override
+//            public void onResponse(final Call<AlbumArt> call, final Response<AlbumArt> response) {
+//                if (response.isSuccessful()) {
+//                    if (response.body().getAlbum() != null) {
+//                        String image = response.body().getAlbum().getImage().get(2).getText();
+//                        mpv.setCoverURL(image);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(final Call<AlbumArt> call, final Throwable t) {
+//
+//            }
+//        });
+
+        if (mediaPlayer == null || !mediaPlayer.isPlaying()) {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(final MediaPlayer mp) {
+                    mpv.setMax(mediaPlayer.getDuration() / 1000);
+                    mpv.start();
+                    mediaPlayer.start();
+                    progress.setVisibility(View.GONE);
+                    viewLoading.setVisibility(View.GONE);
+                    mpv.setVisibility(View.VISIBLE);
+                }
+            });
+
+            mediaPlayer.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                @Override
+                public boolean onInfo(final MediaPlayer mp, final int what, final int extra) {
+                    switch (what) {
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+                            mpv.stop();
+                            break;
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_END:
+                            mpv.start();
+                            break;
+                    }
+                    return false;
+                }
+            });
+
+            try {
+                String url = "http://ec2-34-201-152-32.compute-1.amazonaws.com:8000/api/songs/" + id + ".mp3";
+                mediaPlayer.setDataSource(url);
+                mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(final MediaPlayer mp, final int what, final int extra) {
+                        Toast.makeText(SongActivity.this, "La canción no se encuentra en el servidor", Toast.LENGTH_LONG)
+                            .show();
+                        Intent i = new Intent(SongActivity.this, MainActivity.class);
+                        startActivity(i);
+                        return false;
+                    }
+                });
+                mediaPlayer.prepareAsync();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mpv.setCoverDrawable(R.drawable.vinyl);
+
+            mpv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mpv.isRotating()) {
+                        mpv.stop();
+                        mediaPlayer.pause();
+                    } else {
+                        mpv.start();
+                        mediaPlayer.start();
+                    }
+                }
+            });
+        }
+        if (id == null) {
+            progress.setVisibility(View.GONE);
+            viewLoading.setVisibility(View.GONE);
+            mpv.setVisibility(View.VISIBLE);
+            mpv.setOnClickListener(null);
+            mediaPlayer.setOnPreparedListener(null);
+        }
+    }
+
+    private void addListenerPrevious() {
+        previous.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onResponse(final Call<AlbumArt> call, final Response<AlbumArt> response) {
-                if (response.isSuccessful()) {
-                    if (response.body().getAlbum() != null) {
-                        String image = response.body().getAlbum().getImage().get(2).getText();
-                        mpv.setCoverURL(image);
+            public void onClick(final View v) {
+                if (songsList != null && !songsPlayed.isEmpty()) {
+                    String idPreviousSong = songsPlayed.get(0);
+                    songsPlayed.remove(0);
+                    songsList.add(0, id);
+                    id = idPreviousSong;
+                    updateInfoSong();
+                    progress.setVisibility(View.VISIBLE);
+                    viewLoading.setVisibility(View.VISIBLE);
+                    mpv.setProgress(0);
+                    try {
+                        mediaPlayer.reset();
+                        String url = "http://ec2-34-201-152-32.compute-1.amazonaws.com:8000/api/songs/" + id + ".mp3";
+                        mediaPlayer.setDataSource(url);
+                        mediaPlayer.prepareAsync();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
-
-            @Override
-            public void onFailure(final Call<AlbumArt> call, final Throwable t) {
-
-            }
         });
+    }
 
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+    private void addListenerNext() {
+        next.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onPrepared(final MediaPlayer mp) {
-                mpv.setMax(mediaPlayer.getDuration() / 1000);
-                mpv.start();
-                mediaPlayer.start();
-                progress.setVisibility(View.GONE);
-                viewLoading.setVisibility(View.GONE);
-                mpv.setVisibility(View.VISIBLE);
-            }
-        });
-
-        try {
-            String url = "http://ec2-34-201-152-32.compute-1.amazonaws.com:8000/api/songs/" + id + ".mp3";
-            mediaPlayer.setDataSource(url);
-            mediaPlayer.prepareAsync();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        mpv = (MaterialMusicPlayerView) findViewById(R.id.mpv);
-
-        mpv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mpv.isRotating()) {
-                    mpv.stop();
-                    mediaPlayer.pause();
-                } else {
-                    mpv.start();
-                    mediaPlayer.start();
+            public void onClick(final View v) {
+                if (songsList != null && !songsList.isEmpty()) {
+                    String idNextSong = songsList.get(0);
+                    songsList.remove(0);
+                    songsPlayed.add(0, id);
+                    id = idNextSong;
+                    updateInfoSong();
+                    progress.setVisibility(View.VISIBLE);
+                    viewLoading.setVisibility(View.VISIBLE);
+                    mpv.setProgress(0);
+                    try {
+                        mediaPlayer.reset();
+                        String url = "http://ec2-34-201-152-32.compute-1.amazonaws.com:8000/api/songs/" + id + ".mp3";
+                        mediaPlayer.setDataSource(url);
+                        mediaPlayer.prepareAsync();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
+            }
+        });
+    }
+
+    private void updateInfoSong() {
+        Call<ServerResponse> song = songsService.getSong(Integer.valueOf(id));
+        song.enqueue(new Callback<ServerResponse>() {
+            @Override
+            public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                if (response.isSuccessful()) {
+                    List<User> usuarios = response.body().getSong().getUsers();
+                    for (User item : usuarios) {
+                        if (item.getId().equals(myId)) {
+                            ratingBar.setRating(item.getUserSong().getRate());
+                            if (item.getUserSong().isLiked()) {
+                                heartSelected.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    }
+                    if (usuarios.isEmpty()) {
+                        ratingBar.setRating(0);
+                        heartSelected.setVisibility(View.GONE);
+                        heart.setVisibility(View.VISIBLE);
+                    }
+                    Song song = response.body().getSong();
+                    textViewSong.setText(song.getTitle());
+                    artist = song.getArtist().get(0).getName();
+                    album = song.getAlbum().getName();
+                    textViewAditional.setText(artist + " - " + album);
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+
             }
         });
     }
@@ -175,6 +317,8 @@ public class SongActivity extends BaseActivity {
         if (auth_token_string != null) {
             songsService = TokenGenerator.createService(SongsService.class, auth_token_string);
         }
+
+        myId = settings.getString("myId", "null");
     }
 
     private void addListenerOnHeart() {
@@ -183,20 +327,17 @@ public class SongActivity extends BaseActivity {
             public void onClick(final View v) {
                 heart.setVisibility(View.GONE);
                 heartSelected.setVisibility(View.VISIBLE);
-                Call<ResponseBody> likeRequest = songsService.likeSong(Integer.valueOf(id), new UserSong(true, ratingBar.getNumStars()));
+                Call<ResponseBody> likeRequest =
+                    songsService.likeSong(Integer.valueOf(id), new UserSong(true, ratingBar.getNumStars()));
                 likeRequest.enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(final Call<ResponseBody> call, final Response<ResponseBody> response) {
-                        if (response.isSuccessful()) {
-                            Toast.makeText(SongActivity.this, "Likie con éxito", Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(SongActivity.this, "No Likie", Toast.LENGTH_LONG).show();
-                        }
+
                     }
 
                     @Override
                     public void onFailure(final Call<ResponseBody> call, final Throwable t) {
-                        Toast.makeText(SongActivity.this, "No Likie onFailure", Toast.LENGTH_LONG).show();
+
                     }
                 });
             }
@@ -211,16 +352,12 @@ public class SongActivity extends BaseActivity {
                 likeRequest.enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(final Call<ResponseBody> call, final Response<ResponseBody> response) {
-                        if (response.isSuccessful()) {
-                            Toast.makeText(SongActivity.this, "Likie con éxito", Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(SongActivity.this, "No Likie", Toast.LENGTH_LONG).show();
-                        }
+
                     }
 
                     @Override
                     public void onFailure(final Call<ResponseBody> call, final Throwable t) {
-                        Toast.makeText(SongActivity.this, "No Likie onFailure", Toast.LENGTH_LONG).show();
+
                     }
                 });
             }
@@ -242,16 +379,12 @@ public class SongActivity extends BaseActivity {
                     ratingRequest.enqueue(new Callback<ResponseBody>() {
                         @Override
                         public void onResponse(final Call<ResponseBody> call, final Response<ResponseBody> response) {
-                            if (response.isSuccessful()) {
-                                Toast.makeText(SongActivity.this, "Rankie con éxito", Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(SongActivity.this, "No rankie", Toast.LENGTH_LONG).show();
-                            }
+
                         }
 
                         @Override
                         public void onFailure(final Call<ResponseBody> call, final Throwable t) {
-                            Toast.makeText(SongActivity.this, "No rankie failure", Toast.LENGTH_LONG).show();
+
                         }
                     });
                 }
@@ -259,20 +392,6 @@ public class SongActivity extends BaseActivity {
         });
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        checkPlayerRunning();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        checkPlayerRunning();
-        finish();
-    }
 
     private void checkPlayerRunning() {
         if (mediaPlayer != null) {
@@ -284,15 +403,9 @@ public class SongActivity extends BaseActivity {
         }
     }
 
-//    @Override
-//    public void onBackPressed() {
-//        super.onBackPressed();
-//        if (mediaPlayer != null) {
-//            if (mediaPlayer.isPlaying()) {
-//                mediaPlayer.stop();
-//            }
-//            mediaPlayer.release();
-//            mediaPlayer = null;
-//        }
-//    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        checkPlayerRunning();
+    }
 }

@@ -10,14 +10,15 @@ public class Song {
 
     private int id;
     private String name;
-    private int album;
+    private Album album;
     private List<Artist> artists;
     private String url_art;
+    List<User> users;
 
     public Song() {
     }
 
-    public Song(final String name, final int album, final List<Artist> artist, final String url_art) {
+    public Song(final String name, final Album album, final List<Artist> artist, final String url_art) {
         this.name = name;
         this.album = album;
         this.artists = artist;
@@ -32,11 +33,11 @@ public class Song {
         this.name = name;
     }
 
-    public int getAlbum() {
+    public Album getAlbum() {
         return album;
     }
 
-    public void setAlbum(final int album) {
+    public void setAlbum(final Album album) {
         this.album = album;
     }
 
@@ -62,5 +63,13 @@ public class Song {
 
     public void setId(final int id) {
         this.id = id;
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(final List<User> users) {
+        this.users = users;
     }
 }

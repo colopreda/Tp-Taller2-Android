@@ -13,6 +13,7 @@ public class Artist {
     private String description;
     private List<String> genres;
     private List<String> images;
+    private List<User> followed;
     private int popularity;
 
     public Artist(final int id, final String name, final String description, final List<String> genres,
@@ -71,5 +72,13 @@ public class Artist {
 
     public void setPopularity(final int popularity) {
         this.popularity = popularity;
+    }
+
+    public List<User> getFollowed() {
+        return followed;
+    }
+
+    public void setFollowed(final List<User> followed) {
+        this.followed = followed;
     }
 }

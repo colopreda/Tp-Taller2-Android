@@ -31,6 +31,7 @@ import com.fiuba.apredazzi.tp_taller2_android.R;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
 import com.fiuba.apredazzi.tp_taller2_android.api.UsersService;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
+import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseError;
@@ -136,7 +137,6 @@ public class ProfileActivity extends BaseActivity {
             e.printStackTrace();
         }
 
-
         userProfilePhoto = (CircleImageView) findViewById(R.id.user_profile_photo);
         userProfilePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -154,9 +154,41 @@ public class ProfileActivity extends BaseActivity {
             .getDefaultSharedPreferences(getApplicationContext());
         auth_token_string = settings.getString("auth_token", "null");
 
+        loadContactsNumber();
+        loadActivity();
+
         String profileUrl = settings.getString("profile_url", null);
         if (profileUrl != null) {
             Picasso.with(ProfileActivity.this).load(profileUrl).into(userProfilePhoto);
+        }
+    }
+
+    private void loadActivity() {
+        if (!"null".equals(auth_token_string)) {
+            final TextView lastArtist = (TextView) findViewById(R.id.textview_activity_artist);
+            final TextView lastTrack = (TextView) findViewById(R.id.textview_activity_tracks);
+            UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+            Call<ServerResponse> activity = usersService.getUsersActivity();
+            activity.enqueue(new Callback<ServerResponse>() {
+                @Override
+                public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                    if (response.isSuccessful() && response.body().getActivities() != null &&
+                        response.body().getActivities().getArtists() != null &&
+                        response.body().getActivities().getSongs() != null &&
+                        !response.body().getActivities().getArtists().isEmpty() &&
+                        !response.body().getActivities().getSongs().isEmpty()) {
+                        lastArtist.setText("  Último artista seguido: " +
+                            response.body().getActivities().getArtists().get(0).getName());
+                        lastTrack.setText("  Última canción likeada: " +
+                            response.body().getActivities().getSongs().get(0).getTitle());
+                    }
+                }
+
+                @Override
+                public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+
+                }
+            });
         }
     }
 
@@ -175,7 +207,6 @@ public class ProfileActivity extends BaseActivity {
 
             saveBirthday(sdf.format(myCalendar.getTime()));
         }
-
     };
 
     private void updateBirthday() {
@@ -185,7 +216,6 @@ public class ProfileActivity extends BaseActivity {
 
         birthdayTextView.setText("  Fecha de Nacimiento: " + sdf.format(myCalendar.getTime()));
     }
-
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
@@ -218,7 +248,6 @@ public class ProfileActivity extends BaseActivity {
                             // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                             @SuppressWarnings("VisibleForTests")
                             Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                            Toast.makeText(ProfileActivity.this, downloadUrl.toString(), Toast.LENGTH_LONG).show();
                             Picasso.with(ProfileActivity.this).load(downloadUrl.toString())
                                 .into(userProfilePhoto, new com.squareup.picasso.Callback() {
 
@@ -235,7 +264,8 @@ public class ProfileActivity extends BaseActivity {
                                         List<String> profile = new ArrayList<String>();
                                         profile.add(profile_url);
                                         user.setImages(profile);
-                                        UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+                                        UsersService usersService =
+                                            TokenGenerator.createService(UsersService.class, auth_token_string);
                                         Call<ResponseBody> updateUser = usersService.modifyUserMe(user);
                                         updateUser.enqueue(new Callback<ResponseBody>() {
                                             @Override
@@ -243,10 +273,12 @@ public class ProfileActivity extends BaseActivity {
                                                 final Response<ResponseBody> response) {
                                                 progressDialog.dismiss();
                                                 if (response.isSuccessful()) {
-                                                    Toast.makeText(ProfileActivity.this, "Se actualizó con éxito la foto", Toast.LENGTH_LONG)
+                                                    Toast.makeText(ProfileActivity.this,
+                                                        "Se actualizó con éxito la foto", Toast.LENGTH_LONG)
                                                         .show();
                                                 } else {
-                                                    Toast.makeText(ProfileActivity.this, "Error en server", Toast.LENGTH_LONG)
+                                                    Toast.makeText(ProfileActivity.this, "Error al actualizar la foto",
+                                                        Toast.LENGTH_LONG)
                                                         .show();
                                                 }
                                             }
@@ -254,8 +286,6 @@ public class ProfileActivity extends BaseActivity {
                                             @Override
                                             public void onFailure(final Call<ResponseBody> call, final Throwable t) {
                                                 progressDialog.dismiss();
-                                                Toast.makeText(ProfileActivity.this, "OnFailure - " + t, Toast.LENGTH_LONG)
-                                                    .show();
                                             }
                                         });
                                     }
@@ -366,13 +396,13 @@ public class ProfileActivity extends BaseActivity {
                 @Override
                 public void onResponse(final Call<ResponseBody> call, final Response<ResponseBody> response) {
                     if (response.isSuccessful()) {
-                        Toast.makeText(ProfileActivity.this, "Se actualizó con éxito el usuario", Toast.LENGTH_LONG)
+                        Toast.makeText(ProfileActivity.this, "Se actualizaron con éxito los datos", Toast.LENGTH_LONG)
                             .show();
                         setNameAndEmail(name, email);
                         nameTextView.setText(name);
                         emailTextView.setText(email);
                     } else {
-                        Toast.makeText(ProfileActivity.this, "Hubo un error actualizando el usuario", Toast.LENGTH_LONG)
+                        Toast.makeText(ProfileActivity.this, "Hubo un error actualizando los datos", Toast.LENGTH_LONG)
                             .show();
                     }
                     pd.dismiss();
@@ -380,7 +410,7 @@ public class ProfileActivity extends BaseActivity {
 
                 @Override
                 public void onFailure(final Call<ResponseBody> call, final Throwable t) {
-                    Toast.makeText(ProfileActivity.this, "OnFailure: " + t, Toast.LENGTH_LONG).show();
+
                 }
             });
         }
@@ -408,7 +438,8 @@ public class ProfileActivity extends BaseActivity {
                         editor.commit();
                         editLocationTextView.setText("  Ubicación: " + country);
                     } else {
-                        Toast.makeText(ProfileActivity.this, "Hubo un error actualizando el usuario", Toast.LENGTH_LONG)
+                        Toast.makeText(ProfileActivity.this, "Hubo un error actualizando la ubicación",
+                            Toast.LENGTH_LONG)
                             .show();
                     }
                     pd.dismiss();
@@ -416,7 +447,7 @@ public class ProfileActivity extends BaseActivity {
 
                 @Override
                 public void onFailure(final Call<ResponseBody> call, final Throwable t) {
-                    Toast.makeText(ProfileActivity.this, "OnFailure: " + t, Toast.LENGTH_LONG).show();
+
                 }
             });
         }
@@ -444,7 +475,8 @@ public class ProfileActivity extends BaseActivity {
                 @Override
                 public void onResponse(final Call<ResponseBody> call, final Response<ResponseBody> response) {
                     if (response.isSuccessful()) {
-                        Toast.makeText(ProfileActivity.this, "Se actualizó con éxito el nacimiento", Toast.LENGTH_LONG)
+                        Toast.makeText(ProfileActivity.this, "Se actualizó con éxito la fecha de nacimiento",
+                            Toast.LENGTH_LONG)
                             .show();
                         SharedPreferences settingsId = PreferenceManager
                             .getDefaultSharedPreferences(getApplicationContext());
@@ -459,7 +491,8 @@ public class ProfileActivity extends BaseActivity {
                         editor.commit();
                         updateBirthday();
                     } else {
-                        Toast.makeText(ProfileActivity.this, "Hubo un error actualizando el usuario", Toast.LENGTH_LONG)
+                        Toast.makeText(ProfileActivity.this, "Hubo un error actualizando la fecha de nacimiento",
+                            Toast.LENGTH_LONG)
                             .show();
                     }
                     pd.dismiss();
@@ -467,7 +500,28 @@ public class ProfileActivity extends BaseActivity {
 
                 @Override
                 public void onFailure(final Call<ResponseBody> call, final Throwable t) {
-                    Toast.makeText(ProfileActivity.this, "OnFailure: " + t, Toast.LENGTH_LONG).show();
+
+                }
+            });
+        }
+    }
+
+    private void loadContactsNumber() {
+        if (!"null".equals(auth_token_string)) {
+            final TextView contacts = (TextView) findViewById(R.id.textview_contacts);
+            UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
+            Call<ServerResponse> listUsuarios = usersService.getAllContacts();
+            listUsuarios.enqueue(new Callback<ServerResponse>() {
+                @Override
+                public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                    if (response.isSuccessful()) {
+                        contacts.setText("  Contactos: " + response.body().getContacts().size());
+                    }
+                }
+
+                @Override
+                public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+
                 }
             });
         }

@@ -13,7 +13,7 @@ import retrofit2.http.Query;
 public interface CoverService {
 
     String BASE_URL = "http://ws.audioscrobbler.com/";
-    String last_fm_api = ""; //Aca va la api key de last fm para levantar los covers
+    String last_fm_api = "c5fbe7ad130c12408957b79e19e50d38";
     String format = "json";
 
     @GET("/2.0/")

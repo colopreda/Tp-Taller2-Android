@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.v17.leanback.widget.HorizontalGridView;
 import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -30,11 +31,15 @@ import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.fiuba.apredazzi.tp_taller2_android.BaseActivity;
 import com.fiuba.apredazzi.tp_taller2_android.R;
+import com.fiuba.apredazzi.tp_taller2_android.adapter.ArtistRecommendedAdapter;
 import com.fiuba.apredazzi.tp_taller2_android.adapter.ArtistsGridViewAdapter;
+import com.fiuba.apredazzi.tp_taller2_android.adapter.TracksRecommendedAdapter;
 import com.fiuba.apredazzi.tp_taller2_android.api.ArtistService;
+import com.fiuba.apredazzi.tp_taller2_android.api.SongsService;
 import com.fiuba.apredazzi.tp_taller2_android.api.TokenGenerator;
 import com.fiuba.apredazzi.tp_taller2_android.api.UsersService;
 import com.fiuba.apredazzi.tp_taller2_android.model.Artist;
+import com.fiuba.apredazzi.tp_taller2_android.model.Song;
 import com.fiuba.apredazzi.tp_taller2_android.model.User;
 import com.fiuba.apredazzi.tp_taller2_android.utils.ServerResponse;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -50,9 +55,11 @@ public class MainActivity extends BaseActivity {
     private TextView nameDrawer;
     private TextView emailDrawer;
 
-    private GridView gridView;
+    private HorizontalGridView gridViewArtists;
+    private HorizontalGridView gridViewTracks;
 
     private List<Artist> artistList;
+    private List<Song> songsList;
 
     String auth_token_string;
 
@@ -67,42 +74,26 @@ public class MainActivity extends BaseActivity {
 
         //inflate your activity layout here!
 //        View contentView = inflater.inflate(R.layout.content_main, frameLayout, false);
-        View contentView = inflater.inflate(R.layout.activity_grid_layout, frameLayout, false);
+        View contentView = inflater.inflate(R.layout.activity_reccommendations, frameLayout, false);
         frameLayout.addView(contentView);
-
-        gridView = (GridView) findViewById(R.id.gridView);
 
         SharedPreferences settings = PreferenceManager
             .getDefaultSharedPreferences(getApplicationContext());
         auth_token_string = settings.getString("auth_token", "null");
 
+        gridViewArtists = (HorizontalGridView) findViewById(R.id.horizontal_gridView_artist);
+        gridViewTracks = (HorizontalGridView) findViewById(R.id.horizontal_gridView_songs);
+
+//        gridViewArtists.setNumRows(5);
+//        gridViewTracks.setNumRows(5);
+
+        getRecommendedArtists();
+        getRecommendedSongs();
+
         String myId = settings.getString("myId", null);
         if (myId != null) {
             FirebaseMessaging.getInstance().subscribeToTopic("user_" + myId);
         }
-
-        ArtistService artistService = TokenGenerator.createService(ArtistService.class, auth_token_string);
-        Call<ServerResponse> listArtistas = artistService.getArtists();
-        listArtistas.enqueue(new Callback<ServerResponse>() {
-            @Override
-            public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
-                if (response.isSuccessful()) {
-                    artistList = response.body().getArtists();
-                    setAdapter();
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(MainActivity.this, "Recibi artistas", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Falle onResponse: " + response.errorBody(),
-                        Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(final Call<ServerResponse> call, final Throwable t) {
-                Toast.makeText(MainActivity
-                    .this, "Falle", Toast.LENGTH_LONG).show();
-            }
-        });
 
         userEmail = (TextView) findViewById(R.id.user_email);
         nameDrawer = (TextView) findViewById(R.id.name_drawer);
@@ -122,48 +113,14 @@ public class MainActivity extends BaseActivity {
         } else {
             userEmail.setText("No hay token seteado");
         }
-
     }
 
-    private void setAdapter() {
-        gridView.setAdapter(new ArtistsGridViewAdapter(this, artistList));
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
-                Intent intent = new Intent(MainActivity.this, SongsListActivity.class);
-                intent.putExtra("type", "albums");
-                intent.putExtra("id", parent.getItemIdAtPosition(position));
-                startActivity(intent);
-            }
-        });
+    private void setAdapterArtist() {
+        gridViewArtists.setAdapter(new ArtistRecommendedAdapter(this, artistList));
     }
 
-    private void getMe() {
-        UsersService usersService = TokenGenerator.createService(UsersService.class, auth_token_string);
-        Call<ServerResponse> getMe = usersService.getUserMe();
-        getMe.enqueue(new Callback<ServerResponse>() {
-            @Override
-            public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
-                if (response.isSuccessful()) {
-                    User me = response.body().getUser();
-                    SharedPreferences settingsId = PreferenceManager
-                        .getDefaultSharedPreferences(getApplicationContext());
-                    SharedPreferences.Editor editor = settingsId.edit();
-                    editor.putString("myId", me.getId());
-                    editor.commit();
-                    String full_name = me.getFirst_name() + " " + me.getLast_name();
-                    setNameAndEmail(full_name, me.getEmail());
-                    Toast.makeText(MainActivity.this, "Nombre e email OK", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Falle onResponse ME: " + response.errorBody(), Toast.LENGTH_LONG).show();
-                }
-            }
-
-            @Override
-            public void onFailure(final Call<ServerResponse> call, final Throwable t) {
-                Toast.makeText(MainActivity.this, "Falle ME", Toast.LENGTH_LONG).show();
-            }
-        });
+    private void setAdapterSongs() {
+        gridViewTracks.setAdapter(new TracksRecommendedAdapter(this, songsList));
     }
 
     @Override
@@ -172,15 +129,59 @@ public class MainActivity extends BaseActivity {
             .setIcon(android.R.drawable.ic_dialog_alert)
             .setTitle("Salir")
             .setMessage("¿Estás seguro que deseas salir de la aplicación?")
-            .setPositiveButton("Si", new DialogInterface.OnClickListener()
-            {
+            .setPositiveButton("Si", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     finish();
                 }
-
             })
             .setNegativeButton("No", null)
             .show();
+    }
+
+    public void getRecommendedArtists() {
+        ArtistService artistService = TokenGenerator.createService(ArtistService.class, auth_token_string);
+        Call<ServerResponse> listArtistas = artistService.getRecommendedArtists();
+        listArtistas.enqueue(new Callback<ServerResponse>() {
+            @Override
+            public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                if (response.isSuccessful()) {
+                    artistList = response.body().getArtists();
+                    setAdapterArtist();
+                    progressBar.setVisibility(View.GONE);
+                } else {
+                    Toast.makeText(MainActivity.this, "Error al recibir los artistas recomendados", Toast.LENGTH_LONG)
+                        .show();
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+                Toast.makeText(MainActivity
+                    .this, "Falle", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void getRecommendedSongs() {
+        SongsService songsService = TokenGenerator.createService(SongsService.class, auth_token_string);
+        Call<ServerResponse> listSongs = songsService.getRecommendedSongs();
+        listSongs.enqueue(new Callback<ServerResponse>() {
+            @Override
+            public void onResponse(final Call<ServerResponse> call, final Response<ServerResponse> response) {
+                if (response.isSuccessful()) {
+                    songsList = response.body().getSongs();
+                    setAdapterSongs();
+                } else {
+                    Toast.makeText(MainActivity.this, "Error al recibir las canciones recomendaeos",
+                        Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(final Call<ServerResponse> call, final Throwable t) {
+
+            }
+        });
     }
 }
